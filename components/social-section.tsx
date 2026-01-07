@@ -57,7 +57,7 @@ export default function SocialSection() {
         <div className="mt-12 text-center">
           <p className="text-gray-600 mb-4">¿Preguntas? Contáctanos:</p>
           <p className="text-2xl font-bold text-orange-600">info@sorteos.com</p>
-          <p className="text-lg text-black mt-2">+51 999 888 777</p>
+          <p className="text-lg text-black mt-2">+51 983 379 056</p>
         </div>
       </div>
     </section>

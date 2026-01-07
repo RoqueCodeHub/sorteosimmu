@@ -1,5 +1,5 @@
 "use client"
-
+import Link from "next/link"
 import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
@@ -60,9 +60,11 @@ style={{ height: "calc(100vh - 80px)" }}
             <div className="text-center text-white px-4">
               <h2 className="text-4xl md:text-6xl font-bold mb-4">{slide.title}</h2>
               <p className="text-xl md:text-2xl mb-8">{slide.subtitle}</p>
+              <Link href="/registro">
               <button className="px-8 py-3 bg-orange-600 text-white font-bold rounded-full hover:bg-orange-700 transition text-lg">
                 PARTICIPAR AHORA
               </button>
+              </Link>
             </div>
           </div>
         </div>
