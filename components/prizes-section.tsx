@@ -1,7 +1,6 @@
 "use client"
 
 import Link from "next/link"
-
 export default function EventosRecientesSection() {
   const eventos = [
     {
@@ -31,7 +30,7 @@ export default function EventosRecientesSection() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
           {eventos.map((evento) => (
-            <Link href={`/eventos/${evento.slug}`} key={evento.id} className="group">
+            <Link href="/registro">
               <div className="relative flex flex-col bg-black rounded-3xl overflow-hidden shadow-2xl transition-transform duration-300 group-hover:scale-[1.02]">
 
                 {/* Contenedor de Imagen: Mantiene la proporción completa */}
