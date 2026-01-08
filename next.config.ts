@@ -1,15 +1,11 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  // 1. CONFIGURACIÓN CLAVE para la exportación estática
-  output: "export", 
-
-  // 2. OPCIONAL: Recomendado si usas next/image
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  output: 'export',
   images: {
     unoptimized: true,
   },
-
-  /* Puedes añadir cualquier otra opción de configuración aquí */
+  // Esto evita errores si usas trailing slashes en tus rutas
+  trailingSlash: true,
 };
 
 export default nextConfig;

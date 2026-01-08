@@ -1,0 +1,149 @@
+// peru-data.tsx
+
+export const UBIGEO_PERU: Record<string, Record<string, string[]>> = {
+    "AMAZONAS": {
+        "CHACHAPOYAS": ["CHACHAPOYAS", "ASUNCION", "BALSAS", "LEYMEBAMBA", "SONCHE"],
+        "BAGUA": ["BAGUA", "LA PECA", "ARAMANGO"],
+        "BONGARA": ["JUMBILLA", "CUISPES", "SHIPASBAMBA"],
+        "CONDORCANQUI": ["NIEVA", "EL CENEPA"],
+        "LUYA": ["LAMUD", "COCABAMBA", "OCALLI"],
+        "RODRIGUEZ DE MENDOZA": ["SAN NICOLAS", "CHIRIMOTO"],
+        "UTCUBAMBA": ["BAGUA GRANDE", "CAJARURO", "JAMALCA"]
+    },
+    "ANCASH": {
+        "HUARAZ": ["HUARAZ", "INDEPENDENCIA", "TARICA"],
+        "SANTA": ["CHIMBOTE", "NUEVO CHIMBOTE", "COISHCO", "MORO"],
+        "HUARI": ["HUARI", "CHAVIN DE HUANTAR"],
+        "CASMA": ["CASMA", "BUENA VISTA ALTA"],
+        "HUAYLAS": ["CARAZ", "PUEBLO LIBRE"]
+    },
+    "APURIMAC": {
+        "ABANCAY": ["ABANCAY", "CHACOCHE", "TAMURCO"],
+        "ANDAHUAYLAS": ["ANDAHUAYLAS", "SAN JERONIMO", "TALAVERA"],
+        "CHINCHEROS": ["CHINCHEROS", "OCOBAMBA"]
+    },
+    "AREQUIPA": {
+        "AREQUIPA": ["AREQUIPA", "CAYMA", "CERRO COLORADO", "YANAHUARA", "JOSE LUIS BUSTAMANTE Y RIVERO"],
+        "CAMANA": ["CAMANA", "JOSE MARIA QUIMPER"],
+        "CARAVELI": ["CARAVELI", "ATICO", "CHALA"],
+        "CAYLLOMA": ["CHIVAY", "CABANACONDE"],
+        "ISLAY": ["MOLLENDO", "MEJIA", "COCACHACRA"]
+    },
+    "AYACUCHO": {
+        "HUAMANGA": ["AYACUCHO", "CARMEN ALTO", "JESUS NAZARENO"],
+        "HUANTA": ["HUANTA", "LURICOCHA"],
+        "LUCANAS": ["PUQUIO", "SAN JUAN"]
+    },
+    "CAJAMARCA": {
+        "CAJAMARCA": ["CAJAMARCA", "BAÑOS DEL INCA", "NAMORA"],
+        "CHOTA": ["CHOTA", "LA PACCHA"],
+        "JAEN": ["JAEN", "BELLAVISTA", "PUCARA"],
+        "CUTERVO": ["CUTERVO", "QUERECOTILLO"]
+    },
+    "CALLAO": {
+        "CALLAO": ["CALLAO", "BELLAVISTA", "LA PERLA", "LA PUNTA", "CARMEN DE LA LEGUA", "VENTANILLA", "MI PERÚ"]
+    },
+    "CUSCO": {
+        "CUSCO": ["CUSCO", "SAN JERONIMO", "SAN SEBASTIAN", "WANCHAQ"],
+        "URUBAMBA": ["URUBAMBA", "MACHUPICCHU", "OLLANTAYTAMBO", "CHINCHERO"],
+        "CALCA": ["CALCA", "PISAC"],
+        "LA CONVENCION": ["SANTA ANA", "ECHARATE", "QUILLABAMBA"],
+        "CANCHIS": ["SICUANI", "COMBAPATA"]
+    },
+    "HUANCAVELICA": {
+        "HUANCAVELICA": ["HUANCAVELICA", "ASCENSION"],
+        "ACOBAMBA": ["ACOBAMBA", "POMACOCHA"],
+        "TAYACAJA": ["PAMPAS", "AHUAYCHA"]
+    },
+    "HUANUCO": {
+        "HUANUCO": ["HUANUCO", "AMARILIS", "PILLCO MARCA"],
+        "LEONCIO PRADO": ["RUPA-RUPA", "TINGO MARIA", "CASTILLO GRANDE"],
+        "DOS DE MAYO": ["LA UNION"]
+    },
+    "ICA": {
+        "ICA": ["ICA", "PARCONA", "SALAS", "SUBTANJALLA"],
+        "CHINCHA": ["CHINCHA ALTA", "GROCIO PRADO", "SUNAMPE"],
+        "NASCA": ["NASCA", "MARCONA"],
+        "PISCO": ["PISCO", "PARACAS", "SAN ANDRES"]
+    },
+    "JUNIN": {
+        "HUANCAYO": ["HUANCAYO", "EL TAMBO", "CHILCA"],
+        "CHANCHAMAYO": ["LA MERCED", "PICHANAQUI", "SAN RAMON"],
+        "TARMA": ["TARMA", "ACOBAMBA"],
+        "SATIPO": ["SATIPO", "MAZAMARI", "PANGOA"]
+    },
+    "LA LIBERTAD": {
+        "TRUJILLO": ["TRUJILLO", "HUANCHACO", "MOCHE", "VICTOR LARCO HERRERA", "LA ESPERANZA"],
+        "ASCOPE": ["ASCOPE", "CHICAMA"],
+        "PACASMAYO": ["SAN PEDRO DE LLOC", "PACASMAYO"],
+        "SANCHEZ CARRION": ["HUAMACHUCO"]
+    },
+    "LAMBAYEQUE": {
+        "CHICLAYO": ["CHICLAYO", "JOSE LEONARDO ORTIZ", "LA VICTORIA", "PIMENTEL"],
+        "FERREÑAFE": ["FERREÑAFE", "PUEBLO NUEVO"],
+        "LAMBAYEQUE": ["LAMBAYEQUE", "MOTUPE", "OLMOS"]
+    },
+    "LIMA": {
+        "LIMA": ["CERCADO DE LIMA", "MIRAFLORES", "SAN ISIDRO", "SANTIAGO DE SURCO", "LA MOLINA", "CHORRILLOS", "SAN BORJA"],
+        "BARRANCA": ["BARRANCA", "SUPE", "PARAMONGA"],
+        "CAÑETE": ["SAN VICENTE DE CAÑETE", "ASIA", "MALA", "LUNAHUANA"],
+        "HUAURA": ["HUACHO", "HUALMAY", "SAYAN"],
+        "HUARAL": ["HUARAL", "CHANCAY"]
+    },
+    "LORETO": {
+        "MAYNAS": ["IQUITOS", "BELEN", "PUNCHANA", "SAN JUAN BAUTISTA"],
+        "ALTO AMAZONAS": ["YURIMAGUAS"],
+        "DATEM DEL MARAÑON": ["BARRANCA"],
+        "REQUENA": ["REQUENA"],
+        "UCAYALI": ["CONTAMANA"]
+    },
+    "MADRE DE DIOS": {
+        "TAMBOPATA": ["TAMBOPATA", "INAMBARI", "LAS PIEDRAS", "LABERINTO"],
+        "MANU": ["MANU", "FITZCARRALD", "MADRE DE DIOS", "HUEPETUHE"],
+        "TAHUAMANU": ["IÑAPARI", "IBERIA", "TAHUAMANU"]
+    },
+    "MOQUEGUA": {
+        "MARISCAL NIETO": ["MOQUEGUA", "SAMEGUA", "TORATA"],
+        "ILO": ["ILO", "PACOCHA", "EL ALGARROBAL"],
+        "GENERAL SANCHEZ CERRO": ["OMATE"]
+    },
+    "PASCO": {
+        "PASCO": ["CHAUPIMARCA", "YANACANCHA"],
+        "OXAPAMPA": ["OXAPAMPA", "VILLA RICA", "POZUZO"],
+        "DANIEL ALCIDES CARRION": ["YANAHUANCA"]
+    },
+    "PIURA": {
+        "PIURA": ["PIURA", "CASTILLA", "CATACAOS", "VEINTISEIS DE OCTUBRE"],
+        "PAITA": ["PAITA", "VICHAYAL"],
+        "SULLANA": ["SULLANA", "BELLAVISTA", "LANCONES"],
+        "TALARA": ["PARIÑAS", "EL ALTO", "MANCORA", "LOS ORGANOS"],
+        "MORROPON": ["CHULUCANAS"]
+    },
+    "PUNO": {
+        "PUNO": ["PUNO", "ACORA", "PLATERIA"],
+        "JULIACA": ["JULIACA", "SAN MIGUEL"],
+        "CHUCUITO": ["JULI"],
+        "LAMPA": ["LAMPA"]
+    },
+    "SAN MARTIN": {
+        "MOYOBAMBA": ["MOYOBAMBA", "YANTALO"],
+        "SAN MARTIN": ["TARAPOTO", "MORALES", "LA BANDA DE SHILCAYO"],
+        "RIOJA": ["RIOJA", "NUEVA CAJAMARCA"],
+        "TOCACHE": ["TOCACHE"]
+    },
+    "TACNA": {
+        "TACNA": ["TACNA", "ALTO DE LA ALIANZA", "CIUDAD NUEVA", "GREGORIO ALBARRACIN"],
+        "CANDARAVE": ["CANDARAVE"],
+        "TARATA": ["TARATA"]
+    },
+    "TUMBES": {
+        "TUMBES": ["TUMBES", "CORRALES", "LA CRUZ"],
+        "ZARUMILLA": ["ZARUMILLA", "AGUAS VERDES"],
+        "CONTRALMIRANTE VILLAR": ["ZORRITOS"]
+    },
+    "UCAYALI": {
+        "CORONEL PORTILLO": ["CALLERIA", "PUCALLPA", "MANANTAY", "YARINACOCHA"],
+        "ATALAYA": ["RAYMONDI"],
+        "PADRE ABAD": ["AGUAYTIA"]
+    }
+};

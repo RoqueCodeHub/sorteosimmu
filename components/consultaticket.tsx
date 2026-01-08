@@ -7,7 +7,7 @@ interface Resultado {
 }
 
 const APPS_SCRIPT_URL =
-  'https://script.google.com/macros/s/AKfycbxml3D2guUoqnGLsFLcT51h4VdDESjCIfLoGNRw9VVMA9se1vUGCgW772M6rzVf472J/exec'
+  'https://script.google.com/macros/s/AKfycbxEnQkvBYUqXlkUKcTSclH2O-0L0Odz7i5sF9F5CueaAzQUhPy4NPkYD4LbWm4cjyf6QA/exec'
 
 export default function ConsultarCodigo() {
   const [documento, setDocumento] = useState('')
@@ -39,8 +39,8 @@ export default function ConsultarCodigo() {
       } else {
         setResultado(data.data)
       }
-    // CORRECCIÓN: Argumento 'err' cambiado a '_err' (no usado)
-    } catch { 
+      // CORRECCIÓN: Argumento 'err' cambiado a '_err' (no usado)
+    } catch {
       setError('Error al consultar el código')
     } finally {
       setLoading(false)

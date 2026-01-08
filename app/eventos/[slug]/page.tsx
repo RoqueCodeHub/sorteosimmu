@@ -23,14 +23,14 @@ export async function generateStaticParams() {
     { slug: 'chapa-tu-fono' },
     { slug: 'chapa-tu-moto' },
   ];
-  
+
   return staticSlugs;
 }
 
 // Mapeamos los slugs a las rutas de imagen (constante definida)
 const imagenes: Record<string, string> = {
-    "chapa-tu-fono": "/phone17.png",
-    "chapa-tu-moto": "/yamaha-mt-09-motorcycle.jpg",
+  "chapa-tu-fono": "/phone17.png",
+  "chapa-tu-moto": "/yamaha-mt-09-motorcycle.jpg",
 };
 
 // -----------------------------------------------------------------------
@@ -43,10 +43,10 @@ export default function EventoPage({ params }: EventoPageProps) {
 
   // 1. Añadimos una VERIFICACIÓN DE SEGURIDAD.
   if (!slug) {
-      // Esto debería ser inalcanzable, pero evita crashes de 'undefined'
-      return <div className="text-red-500 text-center py-20">Error: Evento no encontrado.</div>;
+    // Esto debería ser inalcanzable, pero evita crashes de 'undefined'
+    return <div className="text-red-500 text-center py-20">Error: Evento no encontrado.</div>;
   }
-  
+
   // 2. Lógica de mapeo de imágenes
   const imagenEvento = imagenes[slug] || "/phone17.png";
 
@@ -69,8 +69,8 @@ export default function EventoPage({ params }: EventoPageProps) {
       </section>
 
       {/* 💡 Componentes Cliente (asumiendo que tienen "use client" en su propio archivo) */}
-      <CountdownSection /> 
-      <RegistroSection /> 
+      <CountdownSection />
+      <RegistroSection />
     </main>
   );
 }

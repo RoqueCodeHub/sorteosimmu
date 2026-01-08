@@ -14,7 +14,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ id, onClos
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             {/* Contenido del Modal */}
             <div className="bg-white rounded-xl p-8 shadow-2xl max-w-md w-full relative transform transition-all duration-300 scale-100">
-                
+
                 {/* Botón de cerrar */}
                 <button
                     onClick={onClose}
@@ -26,14 +26,14 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ id, onClos
 
                 {/* Icono de éxito */}
                 <div className="text-center mb-6">
-                    <CheckCircle size={64} className="text-green-500 mx-auto" /> 
+                    <CheckCircle size={64} className="text-green-500 mx-auto" />
                 </div>
 
                 {/* Título y Mensaje MEJORADO */}
                 <h2 className="text-3xl font-bold text-center text-green-700 mb-3">
-                    ¡Participación Confirmada! 
+                    ¡Participación Confirmada!
                 </h2>
-                
+
                 <p className="text-center text-xl text-black font-semibold mb-4">
                     ¡Estás dentro del sorteo! 🎉
                 </p>
@@ -41,7 +41,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ id, onClos
                 <p className="text-center text-gray-700 mb-6 leading-relaxed">
                     La validación de tu comprobante de pago está en curso. Una vez aprobada, recibirás tu *Código de Sorteo Oficial y los detalles completos* directamente en tu *Correo Electrónico*.
                 </p>
-                
+
                 <p className="text-center text-lg font-bold text-orange-600 mb-8">
                     ¡Mucha Suerte! 🍀
                 </p>

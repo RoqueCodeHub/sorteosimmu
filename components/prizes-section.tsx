@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+
 export default function EventosRecientesSection() {
   const eventos = [
     {
@@ -30,10 +31,12 @@ export default function EventosRecientesSection() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
           {eventos.map((evento) => (
-            <Link href="/registro">
-              <div className="relative flex flex-col bg-black rounded-3xl overflow-hidden shadow-2xl transition-transform duration-300 group-hover:scale-[1.02]">
+            /* 1. AGREGAMOS LA KEY AQUÍ (en el elemento más externo del map) */
+            /* 2. CAMBIAMOS EL HREF PARA QUE USE EL SLUG DINÁMICO */
+            <Link key={evento.id} href={"/registro"}>
+              <div className="relative flex flex-col bg-black rounded-3xl overflow-hidden shadow-2xl transition-transform duration-300 hover:scale-[1.02] cursor-pointer group">
 
-                {/* Contenedor de Imagen: Mantiene la proporción completa */}
+                {/* Contenedor de Imagen */}
                 <div className="relative w-full">
                   <img
                     src={evento.imagen}
@@ -49,8 +52,11 @@ export default function EventosRecientesSection() {
                   </div>
                 </div>
 
-                {/* Barra de precio inferior */}
-
+                {/* Barra de información inferior opcional */}
+                <div className="bg-orange-600 p-4 text-center">
+                  <p className="text-white font-bold">{evento.titulo}</p>
+                  <p className="text-yellow-300 text-sm font-black">{evento.precio}</p>
+                </div>
 
               </div>
             </Link>
