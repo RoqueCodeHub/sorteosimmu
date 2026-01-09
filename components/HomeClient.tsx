@@ -1,9 +1,7 @@
 // /components/HomeClient.tsx
-// ESTE ARCHIVO CONTIENE EL CÓDIGO QUE ME ENVIASTE
-
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 
 import HeroSlider from "@/components/hero-slider"
@@ -12,24 +10,22 @@ import PrizesSection from "@/components/prizes-section"
 import WinnersSlider from "@/components/winners-slider"
 import ConsultarCodigo from "@/components/consultaticket"
 
-export default function HomeClient() { // ¡Cambiamos el nombre de la función!
+// Componente envoltorio para manejar useSearchParams de forma segura en Next.js
+function HomeContent() {
   const [mounted, setMounted] = useState(false)
   const searchParams = useSearchParams()
   const scrollTarget = searchParams.get("scroll")
 
-  // Control de montaje para evitar parpadeos en SSR
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  // Scroll automático al cargar la página si viene con ?scroll=...
   useEffect(() => {
     if (mounted && scrollTarget) {
       const element = document.getElementById(scrollTarget)
       if (element) {
-        // Delay para asegurar que todo el contenido ya esté renderizado
         setTimeout(() => {
-          const headerHeight = 80 // altura aproximada del header sticky
+          const headerHeight = 80
           const elementPosition = element.getBoundingClientRect().top + window.scrollY
           window.scrollTo({
             top: elementPosition - headerHeight,
@@ -43,13 +39,38 @@ export default function HomeClient() { // ¡Cambiamos el nombre de la función!
   if (!mounted) return null
 
   return (
-    <main className="min-h-screen bg-white">
+    // CAMBIO CLAVE: bg-slate-950 para eliminar el fondo blanco entre secciones
+    <main className="min-h-screen bg-slate-950">
       <HeroSlider />
-      <CountdownSection />
-      <PrizesSection />
-      <ConsultarCodigo />
-    { /* <PaymentSection /> {/* Agregado si estaba faltando */}
-      <WinnersSlider />
+
+      {/* Sección del Contador */}
+      <div id="sorteo">
+        <CountdownSection />
+      </div>
+
+      {/* Sección de Premios */}
+      <div id="premios">
+        <PrizesSection />
+      </div>
+
+      {/* Sección de Consulta de Tickets */}
+      <div id="consulta">
+        <ConsultarCodigo />
+      </div>
+
+      {/* Sección de Ganadores */}
+      <div id="ganadores">
+        <WinnersSlider />
+      </div>
     </main>
+  )
+}
+
+// Exportación principal con Suspense (Requerido por Next.js al usar useSearchParams)
+export default function HomeClient() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-slate-950" />}>
+      <HomeContent />
+    </Suspense>
   )
 }

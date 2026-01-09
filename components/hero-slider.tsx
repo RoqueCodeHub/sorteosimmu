@@ -1,31 +1,31 @@
 "use client"
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, Zap } from "lucide-react"
 
 const slides = [
   {
     id: 1,
     title: "iPhone 17 Pro Max",
-    subtitle: "Gana el último modelo de Apple",
+    subtitle: "EL FUTURO EN TUS MANOS",
+    highlight: "Gana el último modelo de Apple",
     image: "/iphone-17-pro-max-luxury-phone.jpg",
-    color: "from-blue-600 to-blue-400",
   },
   {
     id: 2,
     title: "Toyota Land Cruiser",
-    subtitle: "Vehículo de lujo garantizado",
+    subtitle: "POTENCIA SIN LÍMITES",
+    highlight: "Vehículo de lujo garantizado",
     image: "/luxury-car-toyota-land-cruiser.jpg",
-    color: "from-red-600 to-red-400",
   },
   {
     id: 3,
     title: "Yamaha MT-09",
-    subtitle: "Moto deportiva de alto rendimiento",
+    subtitle: "ADRENALINA PURA",
+    highlight: "Moto deportiva de alto rendimiento",
     image: "/yamaha-mt-09-sports-motorcycle.jpg",
-    color: "from-yellow-600 to-yellow-400",
-  },
-]
+  }
+];
 
 export default function HeroSlider() {
   const [current, setCurrent] = useState(0)
@@ -33,7 +33,7 @@ export default function HeroSlider() {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % slides.length)
-    }, 5000)
+    }, 6000)
     return () => clearInterval(timer)
   }, [])
 
@@ -43,28 +43,45 @@ export default function HeroSlider() {
   return (
     <section
       id="hero"
-      className="relative w-full overflow-hidden bg-black m-0 p-0 flex items-center justify-center"
-style={{ height: "calc(100vh - 80px)" }}
-
+      className="relative w-full overflow-hidden bg-slate-950 flex items-center justify-center"
+      style={{ height: "calc(100vh - 80px)" }}
     >
       {/* Slides */}
       {slides.map((slide, index) => (
         <div
           key={slide.id}
-          className={`absolute inset-0 transition-opacity duration-1000 ${
-            index === current ? "opacity-100" : "opacity-0"
-          }`}
+          className={`absolute inset-0 transition-all duration-[1500ms] ease-in-out ${index === current ? "opacity-100 scale-100" : "opacity-0 scale-110"
+            }`}
         >
-          <img src={slide.image} alt={slide.title} className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-            <div className="text-center text-white px-4">
-              <h2 className="text-4xl md:text-6xl font-bold mb-4">{slide.title}</h2>
-              <p className="text-xl md:text-2xl mb-8">{slide.subtitle}</p>
-              <Link href="/registro">
-              <button className="px-8 py-3 bg-orange-600 text-white font-bold rounded-full hover:bg-orange-700 transition text-lg">
-                PARTICIPAR AHORA
-              </button>
-              </Link>
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent z-10" />
+          <div className="absolute inset-0 bg-black/40 z-[5]" />
+
+          <img
+            src={slide.image}
+            alt={slide.title}
+            className="w-full h-full object-cover"
+          />
+
+          <div className="absolute inset-0 z-20 flex items-center justify-center">
+            <div className="text-center px-4 max-w-4xl">
+              <span className="inline-block text-orange-500 font-black tracking-[0.3em] text-xs md:text-sm mb-4 animate-in fade-in slide-in-from-bottom-2 duration-700">
+                {slide.subtitle}
+              </span>
+              <h2 className="text-5xl md:text-8xl font-black text-white mb-4 tracking-tighter uppercase italic leading-none animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                {slide.title}
+              </h2>
+              <p className="text-lg md:text-2xl text-slate-300 mb-8 font-light tracking-wide animate-in fade-in slide-in-from-bottom-6 duration-1000">
+                {slide.highlight}
+              </p>
+
+              <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000">
+                <Link href="/registro">
+                  <button className="group relative px-10 py-4 bg-orange-600 text-white font-black rounded-2xl hover:bg-orange-500 transition-all text-lg flex items-center gap-3 mx-auto shadow-[0_0_20px_rgba(234,88,12,0.4)] active:scale-95">
+                    <Zap size={20} fill="currentColor" />
+                    PARTICIPAR AHORA
+                  </button>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -73,26 +90,26 @@ style={{ height: "calc(100vh - 80px)" }}
       {/* Navigation Buttons */}
       <button
         onClick={prev}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-orange-600 hover:bg-orange-700 text-white p-3 rounded-full transition"
+        className="absolute left-6 top-1/2 -translate-y-1/2 z-30 bg-white/5 hover:bg-orange-600 border border-white/10 text-white p-4 rounded-2xl transition-all backdrop-blur-md hidden md:block"
       >
         <ChevronLeft size={24} />
       </button>
       <button
         onClick={next}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-orange-600 hover:bg-orange-700 text-white p-3 rounded-full transition"
+        className="absolute right-6 top-1/2 -translate-y-1/2 z-30 bg-white/5 hover:bg-orange-600 border border-white/10 text-white p-4 rounded-2xl transition-all backdrop-blur-md hidden md:block"
       >
         <ChevronRight size={24} />
       </button>
 
       {/* Indicators */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex gap-3">
+      {/* Busca la sección de los Indicators y reemplázala por esta */}
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 flex gap-3">
         {slides.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrent(index)}
-            className={`w-3 h-3 rounded-full transition ${
-              index === current ? "bg-orange-600 w-8" : "bg-white/50 hover:bg-white"
-            }`}
+            className={`h-1.5 rounded-full transition-all duration-500 ${index === current ? "bg-orange-500 w-12" : "bg-white/20 w-6"
+              }`}
           />
         ))}
       </div>

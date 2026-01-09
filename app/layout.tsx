@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "IMMU -GanaConmigoYa!",
-  description: "¡Gana a lo grande!",
+  title: "IMMU - GanaConmigoYa!",
+  description: "¡Participa en nuestros sorteos y gana premios increíbles!",
 };
 
 export default function RootLayout({
@@ -26,16 +26,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white`}
-      >
-        {/* ✅ Elementos fijos en todas las páginas */}
+    <html lang="es" className="scroll-smooth">
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-950 text-white`}>
         <Header />
-
-        {/* ✅ Aquí cambia dinámicamente el contenido */}
-        <main className="min-h-screen">{children}</main>
-
+        <main>{children}</main>
         <SocialSection />
         <Footer />
       </body>

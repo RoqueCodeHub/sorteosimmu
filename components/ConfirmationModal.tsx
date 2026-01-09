@@ -1,70 +1,64 @@
-// ConfirmationModal.tsx
-
-import React from 'react';
-import { CheckCircle, X } from 'lucide-react';
+"use client"
+import { CheckCircle2, X, Sparkles } from "lucide-react"
+import TicketCard from "./ticket-card"
 
 interface ConfirmationModalProps {
-    id: string; // El ID de registro para mostrar
-    onClose: () => void; // Función para cerrar el modal
+    isOpen: boolean
+    onClose: () => void
+    data: {
+        codigos: string[]
+        evento: string
+        fechaSorteo: string
+    }
 }
 
-export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ id, onClose }) => {
+export default function ConfirmationModal({ isOpen, onClose, data }: ConfirmationModalProps) {
+    if (!isOpen) return null
+
     return (
-        // Overlay (Fondo oscuro)
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            {/* Contenido del Modal */}
-            <div className="bg-white rounded-xl p-8 shadow-2xl max-w-md w-full relative transform transition-all duration-300 scale-100">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-sm">
+            {/* max-w-sm para que sea más estrecho y alto controlado */}
+            <div className="relative w-full max-w-sm bg-slate-900 border border-slate-800 rounded-[2rem] overflow-hidden shadow-2xl animate-in zoom-in-95">
 
-                {/* Botón de cerrar */}
-                <button
-                    onClick={onClose}
-                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition"
-                    aria-label="Cerrar modal"
-                >
-                    <X size={24} />
+                {/* Botón X Superior (Única forma de cerrar ahora) */}
+                <button onClick={onClose} className="absolute top-5 right-5 text-slate-500 hover:text-white z-[110] p-1">
+                    <X size={20} />
                 </button>
 
-                {/* Icono de éxito */}
-                <div className="text-center mb-6">
-                    <CheckCircle size={64} className="text-green-500 mx-auto" />
+                <div className="p-5 flex flex-col items-center">
+                    <div className="text-center mb-3">
+                        <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-green-500/10 text-green-500 mb-2">
+                            <CheckCircle2 size={24} />
+                        </div>
+                        <h2 className="text-lg font-black text-white uppercase italic leading-none">¡SOLICITUD ENVIADA!</h2>
+                    </div>
+
+                    {/* Caja de ID más compacta */}
+                    <div className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 mb-4 text-center">
+                        <div className="flex items-center justify-center gap-2 text-orange-400 mb-0.5">
+                            <Sparkles size={12} />
+                            <span className="text-[8px] font-bold uppercase tracking-widest italic">¡Mucha suerte!</span>
+                        </div>
+                        <p className="text-[9px] text-slate-500 font-mono flex flex-col">
+                            <span>ID DE COMPRA:</span>
+                            <span className="text-orange-500 font-bold break-all leading-tight">{data.codigos[0]}</span>
+                        </p>
+                    </div>
+
+                    {/* Ticket Card */}
+                    <TicketCard
+                        codigos={["VALIDANDO..."]}
+                        evento={data.evento}
+                        fechaSorteo={data.fechaSorteo}
+                    />
+
+                    <p className="text-slate-500 text-[8px] uppercase font-bold mt-4 italic text-center">
+                        Captura esta pantalla para tu control.
+                    </p>
                 </div>
-
-                {/* Título y Mensaje MEJORADO */}
-                <h2 className="text-3xl font-bold text-center text-green-700 mb-3">
-                    ¡Participación Confirmada!
-                </h2>
-
-                <p className="text-center text-xl text-black font-semibold mb-4">
-                    ¡Estás dentro del sorteo! 🎉
-                </p>
-
-                <p className="text-center text-gray-700 mb-6 leading-relaxed">
-                    La validación de tu comprobante de pago está en curso. Una vez aprobada, recibirás tu *Código de Sorteo Oficial y los detalles completos* directamente en tu *Correo Electrónico*.
-                </p>
-
-                <p className="text-center text-lg font-bold text-orange-600 mb-8">
-                    ¡Mucha Suerte! 🍀
-                </p>
-
-
-                {/* Detalles del ID de registro (se mantiene) */}
-                <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-400 mb-8">
-                    <p className="font-semibold text-gray-700">Tu ID de Registro es:</p>
-                    <p className="text-xl font-extrabold text-green-800 break-words">{id}</p>
-                </div>
-                <p className="text-center text-lg font-bold text-orange-600 mb-8">
-                    Verifica tu correo spam
-                </p>
-
-                {/* Botón de acción */}
-                <button
-                    onClick={onClose}
-                    className="w-full px-4 py-3 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 transition"
-                >
-                    Aceptar
-                </button>
-
+                {/* Barra decorativa más delgada */}
+                <div className="h-1 bg-orange-500"></div>
             </div>
         </div>
-    );
-};
+    )
+}
