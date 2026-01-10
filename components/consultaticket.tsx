@@ -15,7 +15,7 @@ interface Resultado {
 }
 
 const APPS_SCRIPT_URL =
-  'https://script.google.com/macros/s/AKfycbzFfXsK3350S5C9jCeVVqHXZiphA9YFeFbwPDKY5BjmwmyQ-yrfcWqBBSXdNgTbYoJaEA/exec'
+  'https://script.google.com/macros/s/AKfycbwz0JHpYgWmvRaZdCtDfR5DsCVn5WZWpSzZX-VbhMMs35JSUS4FosdOMc4_9HkOXDMbfA/exec'
 
 export default function ConsultarCodigo() {
   const [documento, setDocumento] = useState('')
@@ -26,22 +26,27 @@ export default function ConsultarCodigo() {
 
   const ticketRef = useRef<HTMLDivElement>(null)
 
+  // Dentro de buscarCodigo en CONSULTATICKET.TSX
   const buscarCodigo = async () => {
-    if (!documento.trim()) {
-      setError('Por favor, ingrese su DNI o CE')
-      return
-    }
-    setLoading(true)
-    setError('')
-    setResultado(null)
-
+    // ... (tu lógica de loading y validación de input)
+    setLoading(true);
+    setError('');
+    setResultado(null);
     try {
       const response = await fetch(`${APPS_SCRIPT_URL}?accion=buscar&documento=${encodeURIComponent(documento.trim())}`)
       const data = await response.json()
+
       if (!data.success) {
         setError(data.message || 'No se encontraron códigos registrados.')
       } else {
-        setResultado(data.data)
+        // VALIDACIÓN EXTRA: Si por alguna razón llega un string, lo convertimos en array
+        const dataCorregida = {
+          ...data.data,
+          codigos: Array.isArray(data.data.codigos)
+            ? data.data.codigos
+            : String(data.data.codigos).split(',').map((c: string) => c.trim())
+        }
+        setResultado(dataCorregida)
       }
     } catch {
       setError('Error de conexión con el servidor oficial.')
@@ -98,7 +103,14 @@ export default function ConsultarCodigo() {
             disabled={loading || !documento.trim()}
             className="w-full bg-[#1e293b] hover:bg-orange-600 text-slate-400 hover:text-white font-black py-6 rounded-[2rem] text-xl transition-all flex items-center justify-center gap-3 uppercase tracking-widest active:scale-[0.98] border border-slate-700 hover:border-orange-400 disabled:opacity-50"
           >
-            {loading ? <Loader2 className="animate-spin" size={24} /> : 'VERIFICAR MIS CÓDIGOS'}
+            {loading ? (
+              <>
+                <Loader2 className="animate-spin" size={24} />
+                BUSCANDO...
+              </>
+            ) : (
+              'VERIFICAR MIS CÓDIsGOS'
+            )}
           </button>
         </form>
 

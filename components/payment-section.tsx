@@ -6,7 +6,7 @@ import ConfirmationModal from "./ConfirmationModal";
 import { UBIGEO_PERU } from './peru-data';
 
 const APPS_SCRIPT_URL =
-    "https://script.google.com/macros/s/AKfycbzFfXsK3350S5C9jCeVVqHXZiphA9YFeFbwPDKY5BjmwmyQ-yrfcWqBBSXdNgTbYoJaEA/exec";
+    "https://script.google.com/macros/s/AKfycbwz0JHpYgWmvRaZdCtDfR5DsCVn5WZWpSzZX-VbhMMs35JSUS4FosdOMc4_9HkOXDMbfA/exec";
 
 interface FormData {
     firstName: string;

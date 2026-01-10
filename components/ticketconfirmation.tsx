@@ -57,17 +57,24 @@ const TicketCard = forwardRef<HTMLDivElement, TicketProps>((props, ref) => {
             </div>
 
             <div className="relative z-10 bg-orange-600 p-3 rounded-xl text-center">
-                <h3 className="text-[8px] text-orange-200 font-black uppercase mb-1 italic">Estado de Números</h3>
-                <div className="bg-white text-slate-950 py-1.5 rounded-lg font-black text-lg tracking-widest uppercase mb-1">
-                    {props.codigos[0]}
+                <h3 className="text-[8px] text-orange-200 font-black uppercase mb-1 italic">Tus Números de la Suerte</h3>
+
+                {/* CAMBIO AQUÍ: Mostramos todos los códigos separados por comas o espacios */}
+                <div className="bg-white text-slate-950 py-1.5 px-2 rounded-lg font-black text-lg tracking-widest uppercase mb-1 flex flex-wrap justify-center gap-2">
+                    {props.codigos && props.codigos.length > 0
+                        ? props.codigos.join(" - ")
+                        : "PROCESANDO..."}
                 </div>
+
                 <p className="text-[7px] text-orange-100 font-medium leading-tight px-1 uppercase italic">
-                    Revisa tu bandeja de entrada o <span className="font-black underline">SPAM</span>.
+                    {props.codigos.length > 1
+                        ? `Tienes ${props.codigos.length} oportunidades para ganar`
+                        : "Revisa tu bandeja de entrada o SPAM."}
                 </p>
             </div>
 
             <div className="relative z-10 flex justify-between w-full text-[7px] font-black uppercase text-slate-500 mt-3 pt-2 border-t border-slate-800 italic">
-                <span>GanaConmigoYa!</span>
+                <span>GanaConmigoYa!xx</span>
                 <span className="text-white">{props.fechaSorteo}</span>
             </div>
         </div>
