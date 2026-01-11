@@ -1,4 +1,5 @@
 "use client"
+import Link from "next/link"
 
 import { Facebook, Instagram, Music2, MessageCircle, ShieldCheck } from "lucide-react"
 
@@ -18,7 +19,7 @@ export default function Footer() {
             </h3>
             <p className="text-slate-500 text-sm leading-relaxed max-w-xs mx-auto md:mx-0">
               IMPORT&apos;s & Multiservices MC E.I.R.L. <br />
-              RUC: 20612345678 (Ejemplo) <br />
+              RUC: 20611213175<br />
               Comprometidos con la transparencia y la emoción en cada sorteo oficial.
             </p>
           </div>
@@ -63,7 +64,7 @@ export default function Footer() {
             </p>
 
             <nav className="flex gap-6 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-              <a href="#" className="hover:text-white transition-colors">Términos</a>
+              <Link href="/terminos" className="hover:text-white transition-colors">Términos</Link>
               <a href="#" className="hover:text-white transition-colors">Privacidad</a>
               <a href="#" className="hover:text-white transition-colors">Soporte</a>
             </nav>
