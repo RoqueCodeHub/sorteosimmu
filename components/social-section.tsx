@@ -7,19 +7,19 @@ export default function SocialSection() {
     {
       name: "Facebook",
       icon: Facebook,
-      url: "https://facebook.com",
+      url: "https://www.facebook.com/immuganaya",
       color: "hover:bg-blue-600",
     },
     {
       name: "Instagram",
       icon: Instagram,
-      url: "https://instagram.com",
+      url: "https://www.instagram.com/immuganaya?igsh=MTJlN3V0emE3bDNo&utm_source=ig_contact_invite",
       color: "hover:bg-gradient-to-tr hover:from-yellow-500 hover:to-purple-600",
     },
     {
       name: "TikTok",
       icon: Music2,
-      url: "https://tiktok.com",
+      url: "https://www.tiktok.com/@corporaciontigosac?_r=1&_t=ZS-92wgAwXbKEu",
       color: "hover:bg-slate-800",
     },
     {
@@ -75,7 +75,7 @@ export default function SocialSection() {
             </div>
             <div>
               <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-1">Escríbenos</p>
-              <p className="text-xl font-bold text-white">info@sorteos.com</p>
+              <p className="text-xl font-bold text-white">immuganaya@gmail</p>
             </div>
           </div>
 

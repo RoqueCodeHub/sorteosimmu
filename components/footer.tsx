@@ -1,6 +1,6 @@
 "use client"
 
-import { Facebook, Instagram, Youtube, MessageCircle, ShieldCheck } from "lucide-react"
+import { Facebook, Instagram, Music2, MessageCircle, ShieldCheck } from "lucide-react"
 
 export default function Footer() {
   const year = new Date().getFullYear()
@@ -27,16 +27,16 @@ export default function Footer() {
           <div className="flex flex-col items-center space-y-4">
             <p className="text-white font-bold uppercase tracking-widest text-xs">Siguenos en vivo</p>
             <div className="flex items-center gap-4">
-              <a href="#" className="w-10 h-10 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-orange-500 hover:border-orange-500 transition-all">
+              <a href="https://www.facebook.com/immuganaya" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-orange-500 hover:border-orange-500 transition-all" aria-label="Facebook">
                 <Facebook size={20} />
               </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-orange-500 hover:border-orange-500 transition-all">
+              <a href="https://www.instagram.com/immuganaya?igsh=MTJlN3V0emE3bDNo&utm_source=ig_contact_invite" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-orange-500 hover:border-orange-500 transition-all" aria-label="Instagram">
                 <Instagram size={20} />
               </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-orange-500 hover:border-orange-500 transition-all">
-                <Youtube size={20} />
+              <a href="https://www.tiktok.com/@corporaciontigosac?_r=1&_t=ZS-92wgAwXbKEu" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-orange-500 hover:border-orange-500 transition-all" aria-label="TikTok">
+                <Music2 size={20} />
               </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-orange-500 hover:border-orange-500 transition-all">
+              <a href="https://wa.me/51983379056" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-orange-500 hover:border-orange-500 transition-all" aria-label="WhatsApp">
                 <MessageCircle size={20} />
               </a>
             </div>

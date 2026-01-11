@@ -18,6 +18,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "IMMU - GanaConmigoYa!",
   description: "¡Participa en nuestros sorteos y gana premios increíbles!",
+  icons: {
+    icon: "/favicon.png", // Asegúrate de que el archivo esté en la carpeta /public
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png", // Opcional: para iPhone
+  },
 };
 
 export default function RootLayout({

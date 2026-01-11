@@ -13,17 +13,24 @@ const slides = [
   },
   {
     id: 2,
-    title: "Toyota Land Cruiser",
-    subtitle: "POTENCIA SIN LÍMITES",
-    highlight: "Vehículo de lujo garantizado",
-    image: "/luxury-car-toyota-land-cruiser.jpg",
+    title: "Kia Soluto",
+    subtitle: "PROXIMOS SORTEOS",
+    highlight: "Vehículo de alto rendimiento",
+    image: "/soluto.png",
   },
   {
     id: 3,
-    title: "Yamaha MT-09",
+    title: "Honda Navi",
     subtitle: "ADRENALINA PURA",
     highlight: "Moto deportiva de alto rendimiento",
-    image: "/yamaha-mt-09-sports-motorcycle.jpg",
+    image: "/navi.png",
+  },
+  {
+    id: 4,
+    title: "Premios en Efectivo",
+    subtitle: "Es la oportunidad de ganar",
+    highlight: "premios desde 100 soles",
+    image: "/efectivo.png",
   }
 ];
 

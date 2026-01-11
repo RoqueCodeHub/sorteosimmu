@@ -7,19 +7,19 @@ export default function EventosRecientesSection() {
   const eventos = [
     {
       id: 1,
-      titulo: "CHAPA TU FONO",
+      titulo: "CHAPA TU EFECTIVO",
       imagen: "/sorteo1.png",
-      edicion: "Primera Edición",
-      precio: "TICKET = 10 SOLES",
-      slug: "chapa-tu-fono",
+      edicion: "Billetazo",
+      precio: "TICKET = 5 SOLES",
+      slug: "chapa-tu-efectivo",
       color: "from-orange-600 to-orange-400"
     },
     {
       id: 2,
       titulo: "CHAPA TU MOTO",
       imagen: "/sorteo2.png",
-      edicion: "Edición Especial",
-      precio: "TICKET = 20 SOLES",
+      edicion: "Motos y Billetazo",
+      precio: "TICKET = 10 SOLES",
       slug: "chapa-tu-moto",
       color: "from-orange-700 to-orange-500"
     },
@@ -47,11 +47,11 @@ export default function EventosRecientesSection() {
               <div className="relative flex flex-col bg-slate-900/50 border border-slate-800 rounded-[2.5rem] overflow-hidden transition-all duration-500 hover:border-orange-500/50 hover:shadow-[0_0_40px_rgba(234,88,12,0.15)] group-hover:-translate-y-2">
 
                 {/* Contenedor de Imagen con Overlay al hacer Hover */}
-                <div className="relative aspect-[4/3] overflow-hidden">
+                <div className="relative w-full overflow-hidden">
                   <img
                     src={evento.imagen}
                     alt={evento.titulo}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    className="w-full h-auto object-contain transition-transform duration-700 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-60"></div>
 

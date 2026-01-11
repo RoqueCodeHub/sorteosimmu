@@ -175,16 +175,25 @@ export default function PaymentSection() {
                             <div className="bg-white p-4 rounded-3xl max-w-[280px] mx-auto mb-8 shadow-2xl overflow-hidden">
                                 <div className="aspect-square bg-slate-100 rounded-2xl flex items-center justify-center border-2 border-dashed border-slate-300 relative">
                                     <img
-                                        src="/qr-code.png" // Ajusta la ruta a tu imagen real
+                                        src="/plin.jpeg" // Ajusta la ruta a tu imagen real
                                         alt="QR de pago"
                                         className="w-full h-full object-contain"
                                     />
                                 </div>
                             </div>
+                            {/*<div className="bg-white p-4 rounded-3xl max-w-[280px] mx-auto mb-8 shadow-2xl overflow-hidden">
+                                <div className="aspect-square bg-slate-100 rounded-2xl flex items-center justify-center border-2 border-dashed border-slate-300 relative">
+                                    <img
+                                        src="/qr-code.png" // Ajusta la ruta a tu imagen real
+                                        alt="QR de pago"
+                                        className="w-full h-full object-contain"
+                                    />
+                                </div>
+                            </div>*/}
 
                             <div className="text-center space-y-2 py-6 border-t border-slate-800">
                                 <p className="text-xs text-slate-500 uppercase font-bold tracking-widest">Número de contacto</p>
-                                <p className="text-3xl font-black text-orange-500 tracking-tight">+51 999 888 777</p>
+                                <p className="text-3xl font-black text-orange-500 tracking-tight">+51 983 379 056</p>
                             </div>
                         </div>
                     </div>
