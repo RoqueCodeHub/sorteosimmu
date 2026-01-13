@@ -80,8 +80,8 @@ export default function CountdownSection() {
     <div className="flex flex-col items-center">
       <div className="relative group">
         <div className="absolute -inset-1 bg-gradient-to-t from-orange-600 to-orange-400 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-1000" />
-        <div className="relative bg-slate-900 border border-slate-800 rounded-2xl w-24 h-24 md:w-32 md:h-32 flex items-center justify-center shadow-2xl">
-          <span className="text-4xl md:text-5xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400">
+        <div className="relative bg-slate-900 border border-slate-800 rounded-xl sm:rounded-2xl w-16 h-16 sm:w-24 sm:h-24 md:w-32 md:h-32 flex items-center justify-center shadow-2xl">
+          <span className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400">
             {String(value).padStart(2, "0")}
           </span>
         </div>
@@ -104,11 +104,11 @@ export default function CountdownSection() {
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-600/10 border border-orange-600/20 text-orange-500 text-[10px] font-black uppercase tracking-[0.3em] mb-6">
             <Flame size={14} className="animate-pulse" />
-            Sorteo en Vivo por Facebook / YouTube
+            Sorteo en Vivo por Facebook
           </div>
 
           <h2 className="text-3xl md:text-5xl font-black text-white mb-4 tracking-tighter uppercase">
-            ¡GRAN OPORTUNIDAD! <br />
+            ¡GRAN OPORTUNIDAD! <span className="text-orange-500 font-bold">Participa y gana dinero en efectivo ESTE </span><br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-orange-300">
               {formattedDate}
             </span>
@@ -116,7 +116,7 @@ export default function CountdownSection() {
         </div>
 
         {/* Contador */}
-        <div className="flex justify-center gap-4 md:gap-8 mb-16">
+        <div className="flex justify-center gap-3 sm:gap-4 md:gap-8 mb-16">
           <TimeBox value={timeLeft.days} label="Días" />
           <TimeBox value={timeLeft.hours} label="Horas" />
           <TimeBox value={timeLeft.minutes} label="Min" />

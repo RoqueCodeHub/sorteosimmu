@@ -22,7 +22,7 @@ interface Participante {
 }
 
 const APPS_SCRIPT_URL =
-    'https://script.google.com/macros/s/AKfycbzP86dN2ZGa57gDtwLtylBt8F3sJd5BIJz4s1hszfpy1MIFkAEq3DTRMQjRY0xAc5foDw/exec'
+    'https://script.google.com/macros/s/AKfycbyXTymHDDP5kH7Yq3W38_4luLRJ0_oFA_e5w2783Ma5a_jJgGhDeO8Bzy6S1NciFHxt4g/exec'
 
 
 

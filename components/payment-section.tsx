@@ -6,7 +6,7 @@ import ConfirmationModal from "./ConfirmationModal";
 import { UBIGEO_PERU } from './peru-data';
 
 const APPS_SCRIPT_URL =
-    "https://script.google.com/macros/s/AKfycbzP86dN2ZGa57gDtwLtylBt8F3sJd5BIJz4s1hszfpy1MIFkAEq3DTRMQjRY0xAc5foDw/exec";
+    "https://script.google.com/macros/s/AKfycbyXTymHDDP5kH7Yq3W38_4luLRJ0_oFA_e5w2783Ma5a_jJgGhDeO8Bzy6S1NciFHxt4g/exec";
 
 interface FormData {
     firstName: string;
@@ -241,21 +241,11 @@ export default function PaymentSection() {
                                 <div className="flex items-center gap-2 text-slate-400 text-sm font-medium">
                                     <MapPin size={16} /> Ubicación de residencia
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div className="grid grid-cols-1 md:grid-cols-1 gap-3">
                                     <select name="department" value={formData.department} onChange={handleChange} required
                                         className="bg-slate-950 px-3 py-3 border border-slate-800 rounded-xl text-sm outline-none focus:border-orange-500">
                                         <option value="">Dpto.</option>
                                         {departamentos.map(dep => <option key={dep} value={dep}>{dep}</option>)}
-                                    </select>
-                                    <select name="province" value={formData.province} onChange={handleChange} disabled={!formData.department} required
-                                        className="bg-slate-950 px-3 py-3 border border-slate-800 rounded-xl text-sm outline-none focus:border-orange-500 disabled:opacity-30">
-                                        <option value="">Prov.</option>
-                                        {provincias.map(prov => <option key={prov} value={prov}>{prov}</option>)}
-                                    </select>
-                                    <select name="district" value={formData.district} onChange={handleChange} disabled={!formData.province} required
-                                        className="bg-slate-950 px-3 py-3 border border-slate-800 rounded-xl text-sm outline-none focus:border-orange-500 disabled:opacity-30">
-                                        <option value="">Dist.</option>
-                                        {distritos.map(dist => <option key={dist} value={dist}>{dist}</option>)}
                                     </select>
                                 </div>
                             </div>
@@ -273,7 +263,7 @@ export default function PaymentSection() {
                                 </select>
                                 <select name="cantidadTickets" value={formData.cantidadTickets} onChange={handleChange}
                                     className="w-full bg-slate-950 px-5 py-4 border border-slate-800 rounded-2xl focus:border-orange-500 outline-none">
-                                    {[1, 2, 3, 4, 5, 10, 20].map(n => <option key={n} value={n}>{n} Ticket{n > 1 ? 's' : ''}</option>)}
+                                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 30, 40, 50, 60, 70, 80, 90, 100].map(n => <option key={n} value={n}>{n} Ticket{n > 1 ? 's' : ''}</option>)}
                                 </select>
                             </div>
 

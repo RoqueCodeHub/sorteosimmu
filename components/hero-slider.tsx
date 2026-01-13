@@ -5,11 +5,18 @@ import { ChevronLeft, ChevronRight, Zap } from "lucide-react"
 
 const slides = [
   {
-    id: 1,
-    title: "iPhone 17 Pro Max",
-    subtitle: "EL FUTURO EN TUS MANOS",
-    highlight: "Gana el último modelo de Apple",
-    image: "/iphone-17-pro-max-luxury-phone.jpg",
+    id: 4,
+    title: "Premios en Efectivo",
+    subtitle: "Hoy es la oportunidad de ganar",
+    highlight: "premios desde 100 soles este 25 de enero",
+    image: "/efectivo.png",
+  },
+  {
+    id: 3,
+    title: "Honda Navi",
+    subtitle: "Siguiente Sorteo",
+    highlight: "Moto deportiva de alto rendimiento",
+    image: "/navi.png",
   },
   {
     id: 2,
@@ -19,19 +26,13 @@ const slides = [
     image: "/soluto.png",
   },
   {
-    id: 3,
-    title: "Honda Navi",
-    subtitle: "ADRENALINA PURA",
-    highlight: "Moto deportiva de alto rendimiento",
-    image: "/navi.png",
-  },
-  {
-    id: 4,
-    title: "Premios en Efectivo",
-    subtitle: "Es la oportunidad de ganar",
-    highlight: "premios desde 100 soles",
-    image: "/efectivo.png",
+    id: 1,
+    title: "iPhone 17 Pro Max",
+    subtitle: "EL FUTURO EN TUS MANOS",
+    highlight: "Gana el último modelo de Apple",
+    image: "/iphone-17-pro-max-luxury-phone.jpg",
   }
+
 ];
 
 export default function HeroSlider() {
@@ -40,7 +41,7 @@ export default function HeroSlider() {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % slides.length)
-    }, 6000)
+    }, 8000)
     return () => clearInterval(timer)
   }, [])
 

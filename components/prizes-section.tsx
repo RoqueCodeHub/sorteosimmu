@@ -7,9 +7,9 @@ export default function EventosRecientesSection() {
   const eventos = [
     {
       id: 1,
-      titulo: "CHAPA TU EFECTIVO",
+      titulo: "CHAPA TU EFECTIVO ESTE 25 DE ENERO",
       imagen: "/sorteo1.png",
-      edicion: "Billetazo",
+      edicion: "Billetazo, 25 de Enero",
       precio: "TICKET = 5 SOLES",
       slug: "chapa-tu-efectivo",
       color: "from-orange-600 to-orange-400"
@@ -18,7 +18,7 @@ export default function EventosRecientesSection() {
       id: 2,
       titulo: "CHAPA TU MOTO",
       imagen: "/sorteo2.png",
-      edicion: "Motos y Billetazo",
+      edicion: "pronto, Motos y Billetazo",
       precio: "TICKET = 10 SOLES",
       slug: "chapa-tu-moto",
       color: "from-orange-700 to-orange-500"

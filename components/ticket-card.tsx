@@ -1,8 +1,13 @@
+//ticketcard
+
+//ticketonfirmation
 "use client"
 import React, { forwardRef } from "react"
-import { Trophy, Ticket, Star, Sparkles } from "lucide-react"
+import { Trophy, Ticket, User, Star, Sparkles } from "lucide-react"
 
 interface TicketProps {
+    nombres?: string
+    apellidos?: string
     codigos: string[]
     evento: string
     fechaSorteo: string
@@ -11,7 +16,7 @@ interface TicketProps {
 const TicketCard = forwardRef<HTMLDivElement, TicketProps>((props, ref) => {
     return (
         <div ref={ref} className="relative w-[320px] overflow-hidden rounded-[1.5rem] border-2 border-orange-500 bg-slate-950 p-4 shadow-2xl">
-            {/* Icono de fondo más pequeño */}
+            {/* Icono de fondo */}
             <div className="absolute -right-2 -top-2 opacity-10 text-orange-500">
                 <Trophy size={80} />
             </div>
@@ -28,29 +33,51 @@ const TicketCard = forwardRef<HTMLDivElement, TicketProps>((props, ref) => {
                 </p>
             </div>
 
-            {/* Solo mostramos el Sorteo Destinado */}
-            <div className="relative z-10 mb-3">
-                <div className="flex items-center gap-3 bg-slate-900/80 border border-slate-800 p-3 rounded-xl">
-                    <Star className="text-orange-500" size={18} />
+            <div className="relative z-10 space-y-2 mb-3">
+                {/* Campo Participante - Tamaño reducido para PDF */}
+                <div className="flex items-center gap-3 bg-slate-900/80 border border-slate-800 p-2.5 rounded-xl">
+                    <User className="text-orange-500" size={14} />
+                    <div className="text-left overflow-hidden">
+                        <p className="text-[7px] text-slate-500 font-black uppercase leading-none mb-1">Participante</p>
+                        <p className="text-white font-bold text-[10px] sm:text-[11px] uppercase leading-tight truncate w-[210px] tracking-tight">
+                            {props.nombres && props.apellidos
+                                ? `${props.nombres} ${props.apellidos}`
+                                : "CARGANDO..."}
+                        </p>
+                    </div>
+                </div>
+
+                {/* Sorteo Destinado */}
+                <div className="flex items-center gap-3 bg-slate-900/80 border border-slate-800 p-2.5 rounded-xl">
+                    <Star className="text-orange-500" size={14} />
                     <div className="text-left">
-                        <p className="text-[8px] text-slate-500 font-black uppercase leading-none mb-1">Sorteo Destinado</p>
-                        <p className="text-white font-bold text-sm uppercase leading-none">{props.evento || "SORTEO GENERAL"}</p>
+                        <p className="text-[7px] text-slate-500 font-black uppercase leading-none mb-1">Sorteo Destinado</p>
+                        <p className="text-white font-bold text-[11px] uppercase leading-none tracking-tight">
+                            {props.evento || "SORTEO GENERAL"}
+                        </p>
                     </div>
                 </div>
             </div>
 
             <div className="relative z-10 bg-orange-600 p-3 rounded-xl text-center">
-                <h3 className="text-[8px] text-orange-200 font-black uppercase mb-1 italic">Estado de Números</h3>
-                <div className="bg-white text-slate-950 py-1.5 rounded-lg font-black text-lg tracking-widest uppercase mb-1">
-                    {props.codigos[0]}
+                <h3 className="text-[8px] text-orange-200 font-black uppercase mb-1 italic">Tus Números de la Suerte</h3>
+
+                {/* CAMBIO AQUÍ: Mostramos todos los códigos separados por comas o espacios */}
+                <div className="bg-white text-slate-950 py-1.5 px-2 rounded-lg font-black text-lg tracking-widest uppercase mb-1 flex flex-wrap justify-center gap-2">
+                    {props.codigos && props.codigos.length > 0
+                        ? props.codigos.join(" - ")
+                        : "PROCESANDO..."}
                 </div>
+
                 <p className="text-[7px] text-orange-100 font-medium leading-tight px-1 uppercase italic">
-                    Verifica tu bandeja de entrada o <span className="font-black underline">SPAM</span>.
+                    {props.codigos.length > 1
+                        ? `Tienes ${props.codigos.length} oportunidades para ganar`
+                        : "Revisa tu bandeja de entrada o SPAM."}
                 </p>
             </div>
 
             <div className="relative z-10 flex justify-between w-full text-[7px] font-black uppercase text-slate-500 mt-3 pt-2 border-t border-slate-800 italic">
-                <span>GanaConmigoYa!</span>
+                <span>GanaConmigoYa!xx</span>
                 <span className="text-white">{props.fechaSorteo}</span>
             </div>
         </div>

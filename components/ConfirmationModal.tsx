@@ -1,6 +1,6 @@
 "use client"
 import { CheckCircle2, X, Sparkles } from "lucide-react"
-import TicketCard from "./ticket-card"
+import TicketCard from "./ticketconfirmation"
 
 interface ConfirmationModalProps {
     isOpen: boolean
