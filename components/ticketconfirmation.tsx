@@ -1,5 +1,3 @@
-//ticket confirmation
-
 "use client"
 import React, { forwardRef } from "react"
 import { Trophy, Ticket, Star, Sparkles } from "lucide-react"

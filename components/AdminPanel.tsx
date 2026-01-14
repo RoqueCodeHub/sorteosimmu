@@ -21,9 +21,7 @@ interface Participante {
     codigos: string
 }
 
-const APPS_SCRIPT_URL =
-    'https://script.google.com/macros/s/AKfycbyXTymHDDP5kH7Yq3W38_4luLRJ0_oFA_e5w2783Ma5a_jJgGhDeO8Bzy6S1NciFHxt4g/exec'
-
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw1tHJ9cLeaViDfg03b9n_ddZprFQiAFpBsHqzos7660qt3Iog3C2CudRoGxVbtEw5DWQ/exec'
 
 
 export default function AdminPanel() {
@@ -34,7 +32,7 @@ export default function AdminPanel() {
     const [busqueda, setBusqueda] = useState('')
     const [selectedUser, setSelectedUser] = useState<Participante | null>(null)
     const [filtroEvento, setFiltroEvento] = useState('TODOS')
-    const ADMIN_PASSWORD = 'immu'
+    const ADMIN_PASSWORD = 'arce'
 
 
 
@@ -83,24 +81,24 @@ export default function AdminPanel() {
     }
 
     const cargarDatos = async () => {
-        setLoading(true)
+        setLoading(true);
         try {
-            const res = await fetch(`${APPS_SCRIPT_URL}?accion=listarTodo`)
-            const json = await res.json()
+            const res = await fetch(`${APPS_SCRIPT_URL}?accion=listarTodo`);
+            const json = await res.json();
             if (json.success) {
                 const dataValidada = json.data.map((p: any) => ({
                     ...p,
-                    participante: p.participante || `${p.nombres || ''} ${p.apellidos || ''}`.trim() || "Sin Nombre"
-                }))
-                setParticipantes(dataValidada)
+                    // Simplemente nos aseguramos que sea un string, sin procesar nada
+                    fecha: String(p.fecha || '---'),
+                }));
+                setParticipantes(dataValidada);
             }
         } catch (error) {
-            console.error("Error al cargar:", error)
+            console.error("Error:", error);
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
-
+    };
     useEffect(() => {
         if (authorized) cargarDatos()
     }, [authorized])
@@ -108,20 +106,32 @@ export default function AdminPanel() {
     // CAMBIO 1: Cambiar 'documento' por 'idRegistro'
     const actualizarEstado = async (idRegistro: string, nuevoEstado: string) => {
         if (!confirm(`¿Seguro que quieres cambiar el estado a ${nuevoEstado}?`)) return
+
         try {
+            // Usamos una URL que le indique a Google que es un POST seguro
             await fetch(APPS_SCRIPT_URL, {
                 method: 'POST',
-                mode: 'no-cors',
+                mode: 'no-cors', // Evita el error de CORS bloqueante
+                headers: {
+                    'Content-Type': 'text/plain', // Muy importante para Apps Script
+                },
                 body: JSON.stringify({
                     accion: 'actualizarEstado',
-                    idRegistro: idRegistro, // Ahora enviamos el ID único 
-                    nuevoEstado
+                    idRegistro: idRegistro,
+                    nuevoEstado: nuevoEstado
                 })
             })
-            alert("Solicitud enviada. Los cambios pueden tardar unos segundos en reflejarse.")
-            setTimeout(cargarDatos, 2000)
+
+            // Dado que no-cors no nos deja leer la respuesta (success: true)
+            // avisamos al usuario y recargamos tras un breve delay
+            alert("Solicitud enviada. Los cambios se procesarán en breve.");
+            setTimeout(() => {
+                cargarDatos();
+            }, 3000);
+
         } catch (error) {
-            alert("Error al actualizar")
+            console.error("Error:", error);
+            alert("Error al conectar con el servidor");
         }
     }
     // --- LÓGICA DE FILTRADO Y CÁLCULOS (PASO 1) ---
