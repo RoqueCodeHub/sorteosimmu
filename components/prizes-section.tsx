@@ -8,7 +8,7 @@ export default function EventosRecientesSection() {
     {
       id: 1,
       titulo: "CHAPA TU EFECTIVO ESTE 25 DE ENERO",
-      imagen: "/sorteo1.png",
+      imagen: "/sorteo1.png?v=1",
       edicion: "Billetazo, 25 de Enero",
       precio: "TICKET = 5 SOLES",
       slug: "chapa-tu-efectivo",
@@ -17,7 +17,7 @@ export default function EventosRecientesSection() {
     {
       id: 2,
       titulo: "CHAPA TU MOTO",
-      imagen: "/sorteo2.png",
+      imagen: "/sorteo2.png?v=1",
       edicion: "pronto, Motos y Billetazo",
       precio: "TICKET = 10 SOLES",
       slug: "chapa-tu-moto",

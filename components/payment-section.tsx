@@ -176,7 +176,7 @@ export default function PaymentSection() {
                             <div className="bg-white p-4 rounded-3xl max-w-[280px] mx-auto mb-8 shadow-2xl overflow-hidden">
                                 <div className="aspect-square bg-slate-100 rounded-2xl flex items-center justify-center border-2 border-dashed border-slate-300 relative">
                                     <img
-                                        src="/yape.jpeg" // Ajusta la ruta a tu imagen real
+                                        src="/yape.jpeg?v=1" // Ajusta la ruta a tu imagen real
                                         alt="QR de pago"
                                         className="w-full h-full object-contain"
                                     />
@@ -185,7 +185,7 @@ export default function PaymentSection() {
                             <div className="bg-white p-4 rounded-3xl max-w-[280px] mx-auto mb-8 shadow-2xl overflow-hidden">
                                 <div className="aspect-square bg-slate-100 rounded-2xl flex items-center justify-center border-2 border-dashed border-slate-300 relative">
                                     <img
-                                        src="/plin.jpeg" // Ajusta la ruta a tu imagen real
+                                        src="/plin.jpeg?v=1" // Ajusta la ruta a tu imagen real
                                         alt="QR de pago"
                                         className="w-full h-full object-contain"
                                     />
