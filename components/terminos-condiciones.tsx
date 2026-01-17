@@ -179,6 +179,35 @@ export default function TerminosYCondiciones() {
                 <p className="text-red-950 font-medium">Queda prohibida la participación de trabajadores o familiares directos del Organizador.</p>
                 <p className="mt-2 text-red-800 text-xs italic">Fraude, suplantación o comprobantes duplicados darán lugar a descalificación inmediata sin derecho a reclamo.</p>
               </section>
+              {/* Sección 10 */}
+<section>
+  <h3 className="font-black text-slate-900 uppercase text-sm mb-4 flex items-center gap-2">
+    <span className="text-orange-500">10.</span> Modalidad del Sorteo y Validez de Resultados
+  </h3>
+
+  <p>
+    El sorteo se realizará de manera <strong>presencial y virtual</strong>, pudiendo ser
+    transmitido en vivo a través de las plataformas oficiales del Organizador.
+  </p>
+
+  <p className="mt-2">
+    Los resultados del sorteo serán <strong>válidos, definitivos e inapelables</strong>,
+    independientemente de que el participante o ganador se encuentre presente o no
+    al momento de su realización.
+  </p>
+
+  <p className="mt-2">
+    La <strong>ausencia física o virtual, desconexión o inasistencia</strong> del participante
+    no invalida ni afecta el derecho a recibir el premio, siempre que cumpla con los
+    requisitos establecidos en los presentes Términos y Condiciones.
+  </p>
+
+  <p className="mt-2 text-slate-500 italic">
+    El Organizador garantiza el respeto y reconocimiento de los ganadores conforme
+    a los resultados obtenidos durante el sorteo.
+  </p>
+</section>
+
 
               <p className="text-center font-bold text-xs pt-10 text-slate-400 uppercase tracking-widest">
                 Última actualización: 10 de enero de 2026.

@@ -8,7 +8,7 @@ import Link from "next/link"
    CONFIGURACIÓN DEL EVENTO
    ========================= */
 // Fecha fija en CDMX (UTC-6)
-const EVENT_DATE_ISO = "2026-01-25T17:00:00-06:00"
+const EVENT_DATE_ISO = "2026-02-14T17:00:00-06:00"
 
 /* =========================
    TIPOS
@@ -108,7 +108,7 @@ export default function CountdownSection() {
           </div>
 
           <h2 className="text-3xl md:text-5xl font-black text-white mb-4 tracking-tighter uppercase">
-            ¡GRAN OPORTUNIDAD! <span className="text-orange-500 font-bold">Participa y gana dinero en efectivo ESTE </span><br />
+            ¡GRAN OPORTUNIDAD! <span className="text-orange-500 font-bold">Participa La Moto y Dinero en efectivo ESTE </span><br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-orange-300">
               {formattedDate}
             </span>
