@@ -19,7 +19,7 @@ export default function SocialSection() {
     {
       name: "TikTok",
       icon: Music2,
-      url: "https://www.tiktok.com/@corporaciontigosac?_r=1&_t=ZS-92wgAwXbKEu",
+      url: "https://vm.tiktok.com/ZMDBdPg4y/",
       color: "hover:bg-slate-800",
     },
     {
