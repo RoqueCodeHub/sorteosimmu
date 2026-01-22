@@ -30,6 +30,7 @@ export default function AdminPanel() {
     const [participantes, setParticipantes] = useState<Participante[]>([])
     const [loading, setLoading] = useState(true)
     const [busqueda, setBusqueda] = useState('')
+    const [busquedaTicket, setBusquedaTicket] = useState('')
     const [selectedUser, setSelectedUser] = useState<Participante | null>(null)
     const [filtroEvento, setFiltroEvento] = useState('TODOS')
     const ADMIN_PASSWORD = 'arce'
@@ -168,12 +169,21 @@ export default function AdminPanel() {
     useEffect(() => {
         if (authorized) cargarDatos()
     }, [authorized])
-    // --- LÓGICA DE FILTRADO Y CÁLCULOS (PASO 1) ---
+
+    // --- LÓGICA DE FILTRADO Y CÁLCULOS ACTUALIZADA ---
     const filtrados = participantes.filter(p => {
+        // Filtro por Nombre o DNI
         const coincideBusqueda = p.participante.toLowerCase().includes(busqueda.toLowerCase()) ||
             p.documento.includes(busqueda);
+
+        // Filtro por Número de Ticket (Búsqueda exacta)
+        // Convertimos "1034, 1035" en un array ["1034", "1035"] para evitar que al buscar "10" salga el "1034"
+        const listaCodigos = p.codigos ? p.codigos.split(',').map(c => c.trim()) : [];
+        const coincideTicket = busquedaTicket === '' || listaCodigos.includes(busquedaTicket);
+
         const coincideEvento = filtroEvento === 'TODOS' || p.evento === filtroEvento;
-        return coincideBusqueda && coincideEvento;
+
+        return coincideBusqueda && coincideTicket && coincideEvento;
     });
 
     const eventosDisponibles = ['TODOS', ...Array.from(new Set(participantes.map(p => String(p.evento || ''))))];
@@ -266,7 +276,24 @@ export default function AdminPanel() {
                         />
                         <span className="absolute left-4 top-4.5 text-slate-500">🔍</span>
                     </div>
-
+                    <div className="md:w-48 relative">
+                        <input
+                            type="text"
+                            placeholder="N° Ticket..."
+                            className="w-full p-4 pl-12 rounded-xl bg-slate-900 border border-orange-500/50 outline-none focus:border-orange-500 transition shadow-inner text-orange-500 font-bold placeholder:font-normal placeholder:text-slate-600"
+                            value={busquedaTicket}
+                            onChange={(e) => setBusquedaTicket(e.target.value)}
+                        />
+                        {busquedaTicket && (
+                            <button
+                                onClick={() => setBusquedaTicket('')}
+                                className="absolute right-3 top-4 text-slate-500 hover:text-white"
+                            >
+                                ✕
+                            </button>
+                        )}
+                        <span className="absolute left-4 top-4.5">🎫</span>
+                    </div>
                     {/* FILTRO POR EVENTO */}
                     <div className="md:w-64">
                         <select

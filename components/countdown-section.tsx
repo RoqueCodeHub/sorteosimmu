@@ -143,7 +143,7 @@ export default function CountdownSection() {
             <p className="text-slate-300 font-medium">
               Sólo quedan{" "}
               <span className="text-white font-black text-lg">893</span>{" "}
-              tickets disponibles de 2200
+              tickets disponibles de 4300
             </p>
 
             <Link href="/registro"

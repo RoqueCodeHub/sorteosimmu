@@ -20,7 +20,7 @@ const winners = [
   },
   {
     id: 3,
-    name: "Roberto Martínez",
+    name: "Ernesto Pinto Villalta",
     prize: "Yamaha MT-09",
     date: "05 Oct 2025",
     image: "/happy-winner-man-motorcycle.jpg",

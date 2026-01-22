@@ -8,7 +8,7 @@ const slides = [
     id: 4,
     title: "Premios en Efectivo",
     subtitle: "Hoy es la oportunidad de ganar",
-    highlight: "premios desde 100 soles este 25 de enero",
+    highlight: "premios desde S/.100.00 soles este 14 de Febrero",
     image: "/efectivo.png",
   },
   {
