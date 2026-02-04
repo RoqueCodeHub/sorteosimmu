@@ -1,5 +1,5 @@
 'use client'
-
+import jsPDF from 'jspdf'
 import { useState, useEffect } from 'react'
 
 interface Participante {
@@ -117,7 +117,107 @@ export default function AdminPanel() {
             setModalConfig({ show: false, step: 'confirm', data: null });
         }
     };
+    //imprimir cdigos
+    const generarTicketsPDF = () => {
+        // 1. Preparamos la lista "desglosada"
+        // Convertimos: { nombre: "Juan", codigos: "01, 02" } 
+        // En: [{nombre: "Juan", codigo: "01"}, {nombre: "Juan", codigo: "02"}]
+        const listaTickets: { codigo: string; nombre: string; dni: string }[] = [];
 
+        participantes.forEach(p => {
+            if (p.estado === 'APROBADO' && p.codigos) {
+                const cods = p.codigos.split(',').map(c => c.trim());
+                cods.forEach(c => {
+                    if (c) {
+                        listaTickets.push({
+                            codigo: c,
+                            nombre: p.participante, // Nombre para verificar si gana
+                            dni: p.documento
+                        });
+                    }
+                });
+            }
+        });
+
+        if (listaTickets.length === 0) {
+            alert("No hay participantes aprobados con códigos para generar.");
+            return;
+        }
+
+        // 2. Configuración del PDF
+        const doc = new jsPDF();
+        const anchoPagina = 210; // A4 ancho en mm
+        const altoPagina = 297;  // A4 alto en mm
+
+        // Configuración de los tickets (Cuadrícula)
+        const margen = 10;
+        const anchoTicket = 60; // 3 tickets por fila aprox
+        const altoTicket = 30;  // altura del ticket
+        const cols = 3;         // Columnas por página
+        const rows = 9;         // Filas por página (9x3 = 27 tickets por hoja)
+
+        let x = margen;
+        let y = margen;
+        let contadorCol = 0;
+        let contadorRow = 0;
+
+        // Título del documento (opcional, solo en la primera hoja)
+        doc.setFontSize(10);
+        doc.text(`Total Tickets: ${listaTickets.length}`, margen, margen - 2);
+
+        // 3. Dibujar cada ticket
+        listaTickets.forEach((ticket, index) => {
+            // Verificar si necesitamos nueva página
+            if (contadorRow >= rows) {
+                doc.addPage();
+                x = margen;
+                y = margen;
+                contadorRow = 0;
+                contadorCol = 0;
+            }
+
+            // --- DIBUJO DEL TICKET INDIVIDUAL ---
+
+            // Marco del ticket (rectángulo) con borde gris suave
+            doc.setDrawColor(200);
+            doc.rect(x, y, anchoTicket, altoTicket);
+
+            // NÚMERO DE TICKET (Grande y centrado)
+            doc.setTextColor(0); // Negro
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(22);
+            doc.text(ticket.codigo, x + (anchoTicket / 2), y + 12, { align: "center" });
+
+            // NOMBRE DEL PARTICIPANTE (Pequeño abajo)
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8);
+            // Cortamos el nombre si es muy largo para que no se salga
+            const nombreCorto = ticket.nombre.length > 25 ? ticket.nombre.substring(0, 25) + "..." : ticket.nombre;
+            doc.text(nombreCorto, x + (anchoTicket / 2), y + 20, { align: "center" });
+
+            // DNI (Más pequeño)
+            doc.setFontSize(7);
+            doc.setTextColor(100); // Gris
+            doc.text(`DNI: ${ticket.dni}`, x + (anchoTicket / 2), y + 25, { align: "center" });
+
+            // --- FIN DIBUJO TICKET ---
+
+            // Mover coordenadas para el siguiente
+            contadorCol++;
+            x += anchoTicket + 2; // +2 mm de separación
+
+            // Si completamos columnas, bajamos de fila
+            if (contadorCol >= cols) {
+                contadorCol = 0;
+                x = margen;
+                y += altoTicket + 2; // +2 mm de separación vertical
+                contadorRow++;
+            }
+        });
+
+        // 4. Guardar
+        doc.save("tickets-para-sorteo.pdf");
+    };
     //visualizacion del ultimo registro
     const cerrarModalExito = () => {
         if (modalConfig.data) {
@@ -232,6 +332,12 @@ export default function AdminPanel() {
                         </button>
                         <button onClick={cargarDatos} className="bg-slate-800 px-4 py-2 rounded-lg hover:bg-slate-700 transition text-sm font-medium">
                             🔄 Refrescar
+                        </button>
+                        <button
+                            onClick={generarTicketsPDF}
+                            className="bg-purple-600 px-4 py-2 rounded-lg hover:bg-purple-700 transition text-sm font-medium text-white flex items-center gap-2"
+                        >
+                            🖨️ Imprimir Tickets
                         </button>
                         <button onClick={() => setAuthorized(false)} className="bg-red-900/20 text-red-400 border border-red-900/50 px-4 py-2 rounded-lg hover:bg-red-900/40 transition text-sm font-medium">
                             Salir
@@ -389,6 +495,12 @@ export default function AdminPanel() {
                             </button>
                             <button onClick={cargarDatos} className="bg-slate-800 px-4 py-2 rounded-lg hover:bg-slate-700 transition text-sm font-medium">
                                 🔄 Refrescar
+                            </button>
+                            <button
+                                onClick={generarTicketsPDF}
+                                className="bg-purple-600 px-4 py-2 rounded-lg hover:bg-purple-700 transition text-sm font-medium text-white flex items-center gap-2"
+                            >
+                                🖨️ Imprimir Tickets
                             </button>
                             <button onClick={() => setAuthorized(false)} className="bg-red-900/20 text-red-400 border border-red-900/50 px-4 py-2 rounded-lg hover:bg-red-900/40 transition text-sm font-medium">
                                 Salir

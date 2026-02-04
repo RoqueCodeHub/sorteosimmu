@@ -280,10 +280,10 @@ export default function PaymentSection() {
                                 </label>
                             </div>
 
-                            <div className="bg-orange-500/10 border border-orange-500/20 rounded-2xl p-6 text-center shadow-inner">
+                            {/* <div className="bg-orange-500/10 border border-orange-500/20 rounded-2xl p-6 text-center shadow-inner">
                                 <p className="text-slate-400 text-sm uppercase font-bold mb-1">Total a pagar</p>
                                 <p className="text-4xl font-black text-orange-500">S/ {montoTotal.toFixed(2)}</p>
-                            </div>
+                            </div>*/}
 
                             <button type="submit" disabled={loading}
                                 className={`w-full py-5 rounded-2xl font-black text-lg shadow-2xl transition-all transform active:scale-95 ${loading
