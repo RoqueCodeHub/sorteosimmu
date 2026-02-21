@@ -16,7 +16,7 @@ interface Resultado {
   fechaSorteo?: string
 }
 
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw1tHJ9cLeaViDfg03b9n_ddZprFQiAFpBsHqzos7660qt3Iog3C2CudRoGxVbtEw5DWQ/exec'
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwXFAccoOYfIDu4GBVyVcXpHfnkBxAhnX-05u9Xqx4MU9zD1i3qPjUlpqNALmHCwNUI/exec'
 
 export default function ConsultarCodigo() {
   const [documento, setDocumento] = useState('')

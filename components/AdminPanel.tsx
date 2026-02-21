@@ -5,9 +5,10 @@
 // ==========================================
 import { useState, useEffect, useRef } from 'react'
 import jsPDF from 'jspdf'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts'
 
 // URL del Google Apps Script
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw1tHJ9cLeaViDfg03b9n_ddZprFQiAFpBsHqzos7660qt3Iog3C2CudRoGxVbtEw5DWQ/exec'
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwXFAccoOYfIDu4GBVyVcXpHfnkBxAhnX-05u9Xqx4MU9zD1i3qPjUlpqNALmHCwNUI/exec'
 
 // Definición de tipos de datos
 interface Participante {
@@ -54,6 +55,19 @@ export default function AdminPanel() {
     // --- UI e Interacciones ---
     const [selectedUser, setSelectedUser] = useState<Participante | null>(null)
     const [ultimoModificadoId, setUltimoModificadoId] = useState<string | null>(null)
+    // -- Agregando para el esqueleto
+    const [activeTab, setActiveTab] = useState('REGISTROS'); // 'DASHBOARD' | 'REGISTROS' | 'EVENTOS'
+
+    const [configId, setConfigId] = useState('1');
+    const [eventoActivo, setEventoActivo] = useState('');
+    const [precioTicket, setPrecioTicket] = useState('');
+    const [metaTickets, setMetaTickets] = useState('10000');
+    const [promoActiva, setPromoActiva] = useState('ninguna');
+    const [estadoEvento, setEstadoEvento] = useState('ACTIVO');
+    const [flayerUrl, setFlayerUrl] = useState('');
+    const [flayerFile, setFlayerFile] = useState<File | null>(null);
+    const [flayerBase64, setFlayerBase64] = useState('');
+    const [savingConfig, setSavingConfig] = useState(false);
 
     // Configuración del Modal de Confirmación
     const [modalConfig, setModalConfig] = useState({
@@ -112,9 +126,91 @@ export default function AdminPanel() {
         }
     };
 
+    /*registro de eventos*/
+    // --- Cargar Configuración del CMS ---
+    const cargarConfiguracion = async () => {
+        try {
+            const res = await fetch(`${APPS_SCRIPT_URL}?accion=getConfig`);
+            const json = await res.json();
+            if (json.success && json.data) {
+                setConfigId(json.data.id || '1');
+                setEventoActivo(json.data.eventoActivo || '');
+                setPrecioTicket(json.data.precioTicket || '');
+                setMetaTickets(json.data.metaTickets || '10000');
+                setPromoActiva(json.data.promoActiva || '');
+                setEstadoEvento(json.data.estadoEvento || 'ACTIVO');
+
+                // Aplicar el mismo truco del thumbnail para el AdminPanel
+                let imageUrl = json.data.flayerUrl || '';
+                if (imageUrl.includes('drive.google.com/file/d/')) {
+                    const fileId = imageUrl.split('/d/')[1].split('/')[0];
+                    imageUrl = `https://lh3.googleusercontent.com/d/${fileId}`;; // w800 es suficiente para el panel
+                }
+                setFlayerUrl(imageUrl);
+            }
+        } catch (error) {
+            console.error("Error cargando configuración:", error);
+        }
+    };
+
+    // --- Transformar imagen a Base64 ---
+    const handleFlayerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setFlayerFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setFlayerBase64(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    // --- Guardar Configuración ---
+    const guardarConfiguracion = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSavingConfig(true);
+        try {
+            const payload = {
+                accion: 'guardarConfig',
+                id: configId,
+                eventoActivo,
+                precioTicket,
+                metaTickets,
+                promoActiva,
+                estadoEvento,
+                flayerUrl, // Mantiene la url vieja si no subes foto nueva
+                flayerBase64: flayerBase64 ? flayerBase64 : undefined,
+                flayerFileName: flayerFile ? flayerFile.name : undefined
+            };
+
+            const res = await fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+            const json = await res.json();
+
+            if (json.success) {
+                alert("¡Configuración guardada con éxito! 🚀");
+                if (json.flayerUrl) setFlayerUrl(json.flayerUrl);
+                setFlayerFile(null);
+                setFlayerBase64('');
+            } else {
+                alert("Error del servidor: " + json.message);
+            }
+        } catch (error) {
+            alert("Error de conexión al guardar.");
+        } finally {
+            setSavingConfig(false);
+        }
+    };
+
     useEffect(() => {
-        if (authorized) cargarDatos()
-    }, [authorized])
+        if (authorized) {
+            cargarDatos();
+            cargarConfiguracion(); // <--- cargar confoguracion
+        }
+    }, [authorized]);
 
 
     // --- Descargar Excel (CSV) ---
@@ -342,11 +438,49 @@ export default function AdminPanel() {
         return coincideBusqueda && coincideTicket && coincideEvento && coincideEstado;
     });
 
+
     const vistaFinal = [...filtrados].reverse().slice(0, limiteVista === 9999 ? undefined : limiteVista);
     const totalRecaudado = filtrados.filter(p => p.estado === 'APROBADO').reduce((acc, p) => acc + (parseFloat(p.monto) || 0), 0);
     const totalTickets = filtrados.filter(p => p.estado === 'APROBADO').reduce((acc, p) => acc + (parseInt(p.cantidad) || 0), 0);
     const eventosDisponibles = ['TODOS', ...Array.from(new Set(participantes.map(p => String(p.evento || ''))))];
 
+    // --- DATOS PARA GRÁFICO 1: Estado de Registros (Donut Chart) ---
+    const estadoCounts = participantes.reduce((acc, p) => {
+        const estado = p.estado || 'PENDIENTE';
+        acc[estado] = (acc[estado] || 0) + 1;
+        return acc;
+    }, {} as Record<string, number>);
+
+    const pieData = Object.keys(estadoCounts).map(key => ({
+        name: key,
+        value: estadoCounts[key]
+    }));
+    const PIE_COLORS = { APROBADO: '#10b981', PENDIENTE: '#f59e0b', RECHAZADO: '#ef4444' };
+
+    // --- DATOS PARA GRÁFICO 2: Ingresos por Día (Bar Chart) ---
+    const ventasPorFecha = participantes
+        .filter(p => p.estado === 'APROBADO')
+        .reduce((acc, p) => {
+            // Extraemos solo la fecha (asumiendo que viene como "DD/MM/YYYY HH:MM:SS")
+            const fechaCorta = p.fecha.split(' ')[0] || p.fecha;
+            if (!acc[fechaCorta]) acc[fechaCorta] = { fecha: fechaCorta, total: 0 };
+            acc[fechaCorta].total += parseFloat(p.monto) || 0;
+            return acc;
+        }, {} as Record<string, { fecha: string, total: number }>);
+
+    // Convertimos a un array y tomamos solo los últimos 7 días con ventas
+    const barData = Object.values(ventasPorFecha).slice(-7);
+
+    // --- DATOS PARA GRÁFICO 3: Meta del Evento (Goal Tracker) ---
+    const META_TICKETS = parseInt(metaTickets) || 10000;
+    const ticketsFaltantes = Math.max(0, META_TICKETS - totalTickets);
+    const metaData = [
+        { name: 'Vendidos', value: totalTickets },
+        { name: 'Disponibles', value: ticketsFaltantes }
+    ];
+    // Lógica de colores: Verde si está en proceso, Plateado/Platino si llegó a la meta
+    const colorAnillo = totalTickets >= META_TICKETS ? '#e2e8f0' : '#10b981';
+    const fondoAnillo = '#1e293b';
 
     // ==========================================
     // 6. RENDERIZADO (JSX)
@@ -380,134 +514,359 @@ export default function AdminPanel() {
                         <button onClick={iniciarSorteoDigital} className="bg-gradient-to-r from-pink-600 to-purple-600 px-6 py-2 rounded-lg hover:brightness-110 transition text-sm font-bold text-white flex items-center gap-2 shadow-lg shadow-purple-900/40 animate-pulse">
                             🎲 MODO SORTEO
                         </button>
-
-                        <button onClick={descargarCSV} className="bg-emerald-600 px-4 py-2 rounded-lg hover:bg-emerald-700 transition text-sm font-medium text-white flex items-center gap-2">📥 Excel</button>
-                        <button onClick={generarTicketsPDF} className="bg-purple-600 px-4 py-2 rounded-lg hover:bg-purple-700 transition text-sm font-medium text-white flex items-center gap-2">🖨️ PDF</button>
-                        <button onClick={cargarDatos} className="bg-slate-800 px-4 py-2 rounded-lg hover:bg-slate-700 transition text-sm font-medium">🔄 Refrescar</button>
-                        <button onClick={() => setAuthorized(false)} className="bg-red-900/20 text-red-400 border border-red-900/50 px-4 py-2 rounded-lg hover:bg-red-900/40 transition text-sm font-medium">Salir</button>
                     </div>
                 </div>
 
-                {/* KPIS */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                    <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-lg ring-1 ring-emerald-500/10">
-                        <p className="text-slate-500 text-xs uppercase font-black tracking-widest mb-1">Total Recaudado</p>
-                        <div className="flex items-baseline gap-2">
-                            <span className="text-3xl font-bold text-emerald-500">S/ {totalRecaudado.toFixed(2)}</span>
-                            <span className="text-slate-600 text-xs italic">Aprobado</span>
+                {/* --- MENÚ DE PESTAÑAS (NAVEGACIÓN) --- */}
+                <div className="flex gap-6 mb-8 border-b border-slate-800 overflow-x-auto">
+                    <button
+                        onClick={() => setActiveTab('DASHBOARD')}
+                        className={`pb-4 px-2 font-black text-sm uppercase tracking-wider transition-all whitespace-nowrap ${activeTab === 'DASHBOARD' ? 'text-orange-500 border-b-2 border-orange-500' : 'text-slate-500 hover:text-slate-300'}`}
+                    >
+                        📊 Dashboard
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('REGISTROS')}
+                        className={`pb-4 px-2 font-black text-sm uppercase tracking-wider transition-all whitespace-nowrap ${activeTab === 'REGISTROS' ? 'text-orange-500 border-b-2 border-orange-500' : 'text-slate-500 hover:text-slate-300'}`}
+                    >
+                        📝 Registros y Aprobaciones
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('EVENTOS')}
+                        className={`pb-4 px-2 font-black text-sm uppercase tracking-wider transition-all whitespace-nowrap ${activeTab === 'EVENTOS' ? 'text-orange-500 border-b-2 border-orange-500' : 'text-slate-500 hover:text-slate-300'}`}
+                    >
+                        ⚙️ Gestor de Eventos
+                    </button>
+                </div>
+
+                {/* ========================================= */}
+                {/* PESTAÑA 1: DASHBOARD ESTADÍSTICO            */}
+                {/* ========================================= */}
+                {activeTab === 'DASHBOARD' && (
+                    <div className="animate-in fade-in duration-500">
+                        {/* KPIS (Solo en Dashboard) */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                            <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-lg ring-1 ring-emerald-500/10">
+                                <p className="text-slate-500 text-xs uppercase font-black tracking-widest mb-1">Total Recaudado</p>
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-3xl font-bold text-emerald-500">S/ {totalRecaudado.toFixed(2)}</span>
+                                    <span className="text-slate-600 text-xs italic">Aprobado</span>
+                                </div>
+                            </div>
+                            <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-lg ring-1 ring-orange-500/10">
+                                <p className="text-slate-500 text-xs uppercase font-black tracking-widest mb-1">Tickets Vendidos</p>
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-3xl font-bold text-orange-500">{totalTickets}</span>
+                                    <span className="text-slate-600 text-xs italic">Unidades</span>
+                                </div>
+                            </div>
+                            <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-lg ring-1 ring-blue-500/10">
+                                <p className="text-slate-500 text-xs uppercase font-black tracking-widest mb-1">Viendo Registros</p>
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-3xl font-bold text-blue-500">{vistaFinal.length}</span>
+                                    <span className="text-slate-600 text-xs italic">de {filtrados.length} encontrados</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* GRÁFICOS */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {/* Gráfico 1: Meta de Ingresos y Tickets (Radial) */}
+                            <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-lg relative flex flex-col items-center justify-between">
+                                {/* Título y Etiqueta de Full */}
+                                <div className="w-full flex justify-between items-start mb-2">
+                                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">Progreso del Evento</h3>
+                                    {totalTickets >= META_TICKETS && (
+                                        <span className="bg-slate-200 text-slate-900 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest animate-pulse shadow-[0_0_15px_rgba(226,232,240,0.5)]">
+                                            ¡Full / Sold Out!
+                                        </span>
+                                    )}
+                                </div>
+
+                                {/* Anillo Circular con Texto en el Centro */}
+                                <div className="relative w-full h-56 flex items-center justify-center">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie
+                                                data={metaData}
+                                                cx="50%"
+                                                cy="50%"
+                                                innerRadius={70}
+                                                outerRadius={90}
+                                                startAngle={90}
+                                                endAngle={-270}
+                                                dataKey="value"
+                                                stroke="none"
+                                            >
+                                                {/* Celda del progreso (Verde o Plateada) */}
+                                                <Cell fill={colorAnillo} />
+                                                {/* Celda del fondo (Oscura) */}
+                                                <Cell fill={fondoAnillo} />
+                                            </Pie>
+                                        </PieChart>
+                                    </ResponsiveContainer>
+
+                                    {/* Textos absolutos en el centro exacto del anillo */}
+                                    <div className="absolute flex flex-col items-center justify-center text-center mt-1">
+                                        <span className={`text-3xl font-black ${totalTickets >= META_TICKETS ? 'text-slate-200' : 'text-white'}`}>
+                                            {totalTickets}
+                                        </span>
+                                        <span className="text-[10px] text-slate-500 font-bold uppercase border-t border-slate-700 mt-1 pt-1">
+                                            de {META_TICKETS} tickets
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Resumen de Ingresos Debajo del Anillo */}
+                                <div className="w-full mt-4 bg-slate-950 border border-slate-800 rounded-xl p-4 text-center ring-1 ring-emerald-500/10">
+                                    <p className="text-slate-500 text-xs uppercase font-black tracking-widest mb-1">Ingresos Totales</p>
+                                    <p className={`text-3xl font-bold ${totalTickets >= META_TICKETS ? 'text-slate-200' : 'text-emerald-500'}`}>
+                                        S/ {totalRecaudado.toFixed(2)}
+                                    </p>
+                                </div>
+                            </div>
+
+
+                            {/* Gráfico 2: Tasa de Conversión (Estados) */}
+                            <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-lg">
+                                <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-6">Estado de Participaciones</h3>
+                                <div className="h-72 w-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie
+                                                data={pieData}
+                                                cx="50%"
+                                                cy="50%"
+                                                innerRadius={70}
+                                                outerRadius={90}
+                                                paddingAngle={5}
+                                                dataKey="value"
+                                            >
+                                                {pieData.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={PIE_COLORS[entry.name as keyof typeof PIE_COLORS] || '#64748b'} />
+                                                ))}
+                                            </Pie>
+                                            <Tooltip
+                                                contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '8px', color: '#f1f5f9' }}
+                                            />
+                                            <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+                            {/* Gráfico 3: Ingresos por Día */}
+                            <div className="lg:col-span-2 bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-lg">
+                                <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-6">Ingresos Últimos Días (S/)</h3>
+                                <div className="h-72 w-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={barData}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                                            <XAxis dataKey="fecha" stroke="#64748b" fontSize={12} tickMargin={10} />
+                                            <YAxis stroke="#64748b" fontSize={12} tickFormatter={(value) => `S/${value}`} />
+                                            <Tooltip
+                                                contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '8px', color: '#f1f5f9' }}
+                                                itemStyle={{ color: '#f97316', fontWeight: 'bold' }}
+                                            />
+                                            <Bar dataKey="total" name="Recaudado" fill="#f97316" radius={[6, 6, 0, 0]} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-lg ring-1 ring-orange-500/10">
-                        <p className="text-slate-500 text-xs uppercase font-black tracking-widest mb-1">Tickets Vendidos</p>
-                        <div className="flex items-baseline gap-2">
-                            <span className="text-3xl font-bold text-orange-500">{totalTickets}</span>
-                            <span className="text-slate-600 text-xs italic">Unidades</span>
+                )}
+
+
+                {/* ========================================= */}
+                {/* PESTAÑA 2: REGISTROS Y APROBACIONES         */}
+                {/* ========================================= */}
+                {activeTab === 'REGISTROS' && (
+                    <div className="animate-in fade-in slide-in-from-right-4 duration-500">
+
+                        {/* BOTONES DE ACCIÓN (Descargar, Refrescar) */}
+                        <div className="flex flex-wrap gap-3 mb-6">
+                            <button onClick={descargarCSV} className="bg-emerald-600 px-6 py-2 rounded-lg hover:bg-emerald-700 transition text-sm font-medium text-white flex items-center gap-2">📥 Excel</button>
+                            <button onClick={generarTicketsPDF} className="bg-purple-600 px-4 py-2 rounded-lg hover:bg-purple-700 transition text-sm font-medium text-white flex items-center gap-2">🖨️ PDF</button>
+                            <button onClick={cargarDatos} className="bg-slate-800 px-4 py-2 rounded-lg hover:bg-slate-700 transition text-sm font-medium">🔄 Refrescar</button>
+                            <button onClick={() => setAuthorized(false)} className="bg-red-900/20 text-red-400 border border-red-900/50 px-4 py-2 rounded-lg hover:bg-red-900/40 transition text-sm font-medium">Salir</button>
+                        </div>
+
+                        {/* FILTROS */}
+                        <div className="flex flex-col xl:flex-row gap-4 mb-6">
+                            <div className="flex-1 relative min-w-[200px]">
+                                <input type="text" placeholder="Buscar nombre o DNI..." className="w-full p-3 pl-10 rounded-xl bg-slate-900 border border-slate-800 outline-none focus:border-orange-500 transition shadow-inner text-sm" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
+                                <span className="absolute left-3 top-3 text-slate-500 text-sm">🔍</span>
+                            </div>
+                            <div className="relative w-full xl:w-40">
+                                <input type="text" placeholder="N° Ticket" className="w-full p-3 pl-10 rounded-xl bg-slate-900 border border-slate-800 outline-none focus:border-orange-500 transition shadow-inner text-sm text-orange-500 font-bold placeholder:text-slate-600 placeholder:font-normal" value={busquedaTicket} onChange={(e) => setBusquedaTicket(e.target.value)} />
+                                {busquedaTicket && (<button onClick={() => setBusquedaTicket('')} className="absolute right-3 top-3 text-slate-500 hover:text-white text-xs">✕</button>)}
+                                <span className="absolute left-3 top-3 text-sm">🎫</span>
+                            </div>
+                            <div className="w-full xl:w-48">
+                                <select value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)} className={`w-full p-3 rounded-xl border outline-none transition cursor-pointer text-sm font-bold ${filtroEstado === 'PENDIENTES' ? 'bg-orange-500/10 border-orange-500 text-orange-500' : filtroEstado === 'APROBADO' ? 'bg-emerald-500/10 border-emerald-500 text-emerald-500' : 'bg-slate-900 border-slate-800 text-slate-300'}`}>
+                                    <option value="TODOS">⚡ Todos</option>
+                                    <option value="PENDIENTES">⏳ Solo Pendientes</option>
+                                    <option value="APROBADO">✅ Aprobados</option>
+                                    <option value="RECHAZADO">🚫 Rechazados</option>
+                                </select>
+                            </div>
+                            <div className="w-full xl:w-56">
+                                <select value={filtroEvento} onChange={(e) => setFiltroEvento(e.target.value)} className="w-full p-3 rounded-xl bg-slate-900 border border-slate-800 outline-none focus:border-orange-500 transition cursor-pointer text-slate-300 text-sm">
+                                    {eventosDisponibles.map(evento => (<option key={evento} value={evento}>{evento === 'TODOS' ? '📅 Todos los Eventos' : evento}</option>))}
+                                </select>
+                            </div>
+                            <div className="w-full xl:w-32">
+                                <select value={limiteVista} onChange={(e) => setLimiteVista(Number(e.target.value))} className="w-full p-3 rounded-xl bg-slate-900 border border-slate-800 outline-none focus:border-blue-500 transition cursor-pointer text-slate-300 text-sm">
+                                    <option value={10}>Ver 10</option>
+                                    <option value={20}>Ver 20</option>
+                                    <option value={50}>Ver 50</option>
+                                    <option value={9999}>Ver Todos</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* TABLA PRINCIPAL */}
+                        <div className="overflow-x-auto rounded-2xl border border-slate-800 shadow-2xl bg-slate-900/40 backdrop-blur-sm">
+                            <table className="w-full text-left">
+                                <thead className="bg-slate-800/80 text-slate-400 uppercase text-[10px] font-black tracking-widest">
+                                    <tr>
+                                        <th className="p-4">Fecha</th>
+                                        <th className="p-4">Evento</th>
+                                        <th className="p-4">Participante</th>
+                                        <th className="p-4">DNI</th>
+                                        <th className="p-4">Comprobante</th>
+                                        <th className="p-4 text-center">Cant.</th>
+                                        <th className="p-4 text-center">Monto</th>
+                                        <th className="p-4 text-center">Estado</th>
+                                        <th className="p-4 text-center">Acciones</th>
+                                        <th className="p-4 text-center">Detalles</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-800">
+                                    {loading ? (<tr><td colSpan={10} className="p-12 text-center text-slate-500 animate-pulse">Cargando registros...</td></tr>)
+                                        : vistaFinal.length === 0 ? (<tr><td colSpan={10} className="p-12 text-center text-slate-500">No se encontraron registros.</td></tr>)
+                                            : vistaFinal.map((p, i) => (
+                                                <tr key={i} className={`transition-all duration-1000 ${p.idRegistro === ultimoModificadoId ? 'bg-emerald-500/30 ring-2 ring-emerald-500 inset-0 z-10 scale-[1.01] shadow-xl' : 'hover:bg-slate-800/40'}`}>
+                                                    <td className="p-4 text-[11px] text-slate-500 font-medium whitespace-nowrap">{p.fecha}</td>
+                                                    <td className="p-4 text-sm font-medium text-slate-300">{p.evento}</td>
+                                                    <td className="p-4 text-sm">{p.participante}</td>
+                                                    <td className="p-4 text-sm text-slate-400 font-mono">{p.documento}</td>
+                                                    <td className="p-4"><a href={p.linkComprobante} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 hover:underline text-xs flex items-center gap-1">📄 Ver</a></td>
+                                                    <td className="p-4 text-sm text-center font-bold text-slate-300">{String(p.cantidad).split('+')[0].trim()}</td>
+                                                    <td className="p-4 text-sm text-center font-bold text-emerald-500 whitespace-nowrap">S/ {p.monto}</td>
+                                                    <td className="p-4 text-center">
+                                                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${p.estado === 'APROBADO' ? 'bg-green-500/20 text-green-400 border border-green-500/20' : p.estado === 'RECHAZADO' ? 'bg-red-500/20 text-red-400 border border-red-500/20' : 'bg-orange-500/20 text-orange-400 border border-orange-500/20'}`}>{p.estado}</span>
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <div className="flex gap-2 justify-center items-center">
+                                                            {/* BOTÓN WHATSAPP */}
+                                                            <a
+                                                                href={obtenerLinkWhatsapp(p)}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="text-green-500 hover:text-green-400 font-bold bg-green-900/20 p-2 rounded-md hover:bg-green-900/40 transition"
+                                                                title={p.estado === 'APROBADO' ? "Enviar Tickets al Cliente" : "Contactar Cliente"}
+                                                            >
+                                                                📱Ir a WhatsApp
+                                                            </a>
+                                                            {p.estado !== 'APROBADO' && (<button onClick={() => actualizarEstado(p.idRegistro, 'APROBADO')} className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md text-xs font-medium transition">Aprobar</button>)}
+                                                            <button onClick={() => actualizarEstado(p.idRegistro, 'RECHAZADO')} className="bg-red-900/30 hover:bg-red-600 text-red-400 hover:text-white px-3 py-1 rounded-md text-xs font-medium transition border border-red-900/50">Rechazar</button>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-4 text-center"><button onClick={() => setSelectedUser(p)} className="bg-slate-800 hover:bg-orange-500 text-white p-2 rounded-full transition-all shadow-lg hover:scale-110 active:scale-95">🔍</button></td>
+                                                </tr>
+                                            ))}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                    <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-lg ring-1 ring-blue-500/10">
-                        <p className="text-slate-500 text-xs uppercase font-black tracking-widest mb-1">Viendo Registros</p>
-                        <div className="flex items-baseline gap-2">
-                            <span className="text-3xl font-bold text-blue-500">{vistaFinal.length}</span>
-                            <span className="text-slate-600 text-xs italic">de {filtrados.length} encontrados</span>
-                        </div>
-                    </div>
-                </div>
+                )}
 
-                {/* FILTROS */}
-                <div className="flex flex-col xl:flex-row gap-4 mb-6">
-                    <div className="flex-1 relative min-w-[200px]">
-                        <input type="text" placeholder="Buscar nombre o DNI..." className="w-full p-3 pl-10 rounded-xl bg-slate-900 border border-slate-800 outline-none focus:border-orange-500 transition shadow-inner text-sm" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
-                        <span className="absolute left-3 top-3 text-slate-500 text-sm">🔍</span>
-                    </div>
-                    <div className="relative w-full xl:w-40">
-                        <input type="text" placeholder="N° Ticket" className="w-full p-3 pl-10 rounded-xl bg-slate-900 border border-slate-800 outline-none focus:border-orange-500 transition shadow-inner text-sm text-orange-500 font-bold placeholder:text-slate-600 placeholder:font-normal" value={busquedaTicket} onChange={(e) => setBusquedaTicket(e.target.value)} />
-                        {busquedaTicket && (<button onClick={() => setBusquedaTicket('')} className="absolute right-3 top-3 text-slate-500 hover:text-white text-xs">✕</button>)}
-                        <span className="absolute left-3 top-3 text-sm">🎫</span>
-                    </div>
-                    <div className="w-full xl:w-48">
-                        <select value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)} className={`w-full p-3 rounded-xl border outline-none transition cursor-pointer text-sm font-bold ${filtroEstado === 'PENDIENTES' ? 'bg-orange-500/10 border-orange-500 text-orange-500' : filtroEstado === 'APROBADO' ? 'bg-emerald-500/10 border-emerald-500 text-emerald-500' : 'bg-slate-900 border-slate-800 text-slate-300'}`}>
-                            <option value="TODOS">⚡ Todos</option>
-                            <option value="PENDIENTES">⏳ Solo Pendientes</option>
-                            <option value="APROBADO">✅ Aprobados</option>
-                            <option value="RECHAZADO">🚫 Rechazados</option>
-                        </select>
-                    </div>
-                    <div className="w-full xl:w-56">
-                        <select value={filtroEvento} onChange={(e) => setFiltroEvento(e.target.value)} className="w-full p-3 rounded-xl bg-slate-900 border border-slate-800 outline-none focus:border-orange-500 transition cursor-pointer text-slate-300 text-sm">
-                            {eventosDisponibles.map(evento => (<option key={evento} value={evento}>{evento === 'TODOS' ? '📅 Todos los Eventos' : evento}</option>))}
-                        </select>
-                    </div>
-                    <div className="w-full xl:w-32">
-                        <select value={limiteVista} onChange={(e) => setLimiteVista(Number(e.target.value))} className="w-full p-3 rounded-xl bg-slate-900 border border-slate-800 outline-none focus:border-blue-500 transition cursor-pointer text-slate-300 text-sm">
-                            <option value={10}>Ver 10</option>
-                            <option value={20}>Ver 20</option>
-                            <option value={50}>Ver 50</option>
-                            <option value={9999}>Ver Todos</option>
-                        </select>
-                    </div>
-                </div>
+                {/* ========================================= */}
+                {/* PESTAÑA 3: GESTOR DE EVENTOS (CMS)          */}
+                {/* ========================================= */}
+                {activeTab === 'EVENTOS' && (
+                    <div className="animate-in fade-in slide-in-from-right-4 duration-500 pb-12">
+                        <form onSubmit={guardarConfiguracion} className="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl max-w-5xl mx-auto ring-1 ring-white/5">
+                            <div className="flex items-center gap-4 mb-8 border-b border-slate-800 pb-6">
+                                <span className="text-4xl bg-orange-500/10 p-3 rounded-2xl">⚙️</span>
+                                <div>
+                                    <h2 className="text-2xl font-black text-orange-500 uppercase tracking-tighter">Panel de Eventos</h2>
+                                    <p className="text-slate-400 text-sm">Administra los precios, la meta y el flyer de tu página principal.</p>
+                                </div>
+                            </div>
 
-                {/* TABLA PRINCIPAL */}
-                <div className="overflow-x-auto rounded-2xl border border-slate-800 shadow-2xl bg-slate-900/40 backdrop-blur-sm">
-                    <table className="w-full text-left">
-                        <thead className="bg-slate-800/80 text-slate-400 uppercase text-[10px] font-black tracking-widest">
-                            <tr>
-                                <th className="p-4">Fecha</th>
-                                <th className="p-4">Evento</th>
-                                <th className="p-4">Participante</th>
-                                <th className="p-4">DNI</th>
-                                <th className="p-4">Comprobante</th>
-                                <th className="p-4 text-center">Cant.</th>
-                                <th className="p-4 text-center">Monto</th>
-                                <th className="p-4 text-center">Estado</th>
-                                <th className="p-4 text-center">Acciones</th>
-                                <th className="p-4 text-center">Detalles</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-800">
-                            {loading ? (<tr><td colSpan={10} className="p-12 text-center text-slate-500 animate-pulse">Cargando registros...</td></tr>)
-                                : vistaFinal.length === 0 ? (<tr><td colSpan={10} className="p-12 text-center text-slate-500">No se encontraron registros.</td></tr>)
-                                    : vistaFinal.map((p, i) => (
-                                        <tr key={i} className={`transition-all duration-1000 ${p.idRegistro === ultimoModificadoId ? 'bg-emerald-500/30 ring-2 ring-emerald-500 inset-0 z-10 scale-[1.01] shadow-xl' : 'hover:bg-slate-800/40'}`}>
-                                            <td className="p-4 text-[11px] text-slate-500 font-medium whitespace-nowrap">{p.fecha}</td>
-                                            <td className="p-4 text-sm font-medium text-slate-300">{p.evento}</td>
-                                            <td className="p-4 text-sm">{p.participante}</td>
-                                            <td className="p-4 text-sm text-slate-400 font-mono">{p.documento}</td>
-                                            <td className="p-4"><a href={p.linkComprobante} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 hover:underline text-xs flex items-center gap-1">📄 Ver</a></td>
-                                            <td className="p-4 text-sm text-center font-bold text-slate-300">{p.cantidad}</td>
-                                            <td className="p-4 text-sm text-center font-bold text-emerald-500 whitespace-nowrap">S/ {p.monto}</td>
-                                            <td className="p-4 text-center">
-                                                <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${p.estado === 'APROBADO' ? 'bg-green-500/20 text-green-400 border border-green-500/20' : p.estado === 'RECHAZADO' ? 'bg-red-500/20 text-red-400 border border-red-500/20' : 'bg-orange-500/20 text-orange-400 border border-orange-500/20'}`}>{p.estado}</span>
-                                            </td>
-                                            <td className="p-4">
-                                                <div className="flex gap-2 justify-center items-center">
-                                                    {/* BOTÓN WHATSAPP */}
-                                                    <a
-                                                        href={obtenerLinkWhatsapp(p)}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="text-green-500 hover:text-green-400 font-bold bg-green-900/20 p-2 rounded-md hover:bg-green-900/40 transition"
-                                                        title={p.estado === 'APROBADO' ? "Enviar Tickets al Cliente" : "Contactar Cliente"}
-                                                    >
-                                                        📱Ir a WhatsApp
-                                                    </a>
-                                                    {p.estado !== 'APROBADO' && (<button onClick={() => actualizarEstado(p.idRegistro, 'APROBADO')} className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md text-xs font-medium transition">Aprobar</button>)}
-                                                    <button onClick={() => actualizarEstado(p.idRegistro, 'RECHAZADO')} className="bg-red-900/30 hover:bg-red-600 text-red-400 hover:text-white px-3 py-1 rounded-md text-xs font-medium transition border border-red-900/50">Rechazar</button>
-                                                </div>
-                                            </td>
-                                            <td className="p-4 text-center"><button onClick={() => setSelectedUser(p)} className="bg-slate-800 hover:bg-orange-500 text-white p-2 rounded-full transition-all shadow-lg hover:scale-110 active:scale-95">🔍</button></td>
-                                        </tr>
-                                    ))}
-                        </tbody>
-                    </table>
-                </div>
-                <div className="flex flex-wrap gap-3 justify-left">
-                    {/* --- BOTÓN SORTEO DIGITAL --- */}
-                    <button onClick={descargarCSV} className="bg-emerald-600 px-6 py-2 rounded-lg hover:bg-emerald-700 transition text-sm font-medium text-white flex items-center gap-2">📥 Excel</button>
-                    <button onClick={generarTicketsPDF} className="bg-purple-600 px-4 py-2 rounded-lg hover:bg-purple-700 transition text-sm font-medium text-white flex items-center gap-2">🖨️ PDF</button>
-                    <button onClick={cargarDatos} className="bg-slate-800 px-4 py-2 rounded-lg hover:bg-slate-700 transition text-sm font-medium">🔄 Refrescar</button>
-                    <button onClick={() => setAuthorized(false)} className="bg-red-900/20 text-red-400 border border-red-900/50 px-4 py-2 rounded-lg hover:bg-red-900/40 transition text-sm font-medium">Salir</button>
-                </div>
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                                {/* IZQUIERDA: Campos de Texto */}
+                                <div className="space-y-6">
+                                    <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800">
+                                        <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Nombre del Evento / Sorteo</label>
+                                        <input type="text" required value={eventoActivo} onChange={(e) => setEventoActivo(e.target.value)} className="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 outline-none focus:border-orange-500 transition text-slate-200 font-bold" placeholder="Ej: Gran Sorteo Billetazo" />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800">
+                                            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Precio Ticket (S/)</label>
+                                            <input type="number" step="0.10" required value={precioTicket} onChange={(e) => setPrecioTicket(e.target.value)} className="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 outline-none focus:border-emerald-500 transition text-emerald-400 font-black text-lg" placeholder="5.00" />
+                                        </div>
+                                        <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800">
+                                            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Meta de Tickets</label>
+                                            <input type="number" required value={metaTickets} onChange={(e) => setMetaTickets(e.target.value)} className="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 outline-none focus:border-blue-500 transition text-blue-400 font-black text-lg" placeholder="10000" />
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800">
+                                        <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Texto de Promoción Activa</label>
+                                        <input type="text" value={promoActiva} onChange={(e) => setPromoActiva(e.target.value)} className="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 outline-none focus:border-purple-500 transition text-slate-200" placeholder="Ej: Compra 10 y lleva 1 gratis" />
+                                    </div>
+
+                                    <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800">
+                                        <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Estado del Evento</label>
+                                        <select value={estadoEvento} onChange={(e) => setEstadoEvento(e.target.value)} className={`w-full p-4 rounded-xl border outline-none transition font-black tracking-wider cursor-pointer ${estadoEvento === 'ACTIVO' ? 'bg-emerald-500/10 border-emerald-500 text-emerald-500' : 'bg-red-500/10 border-red-500 text-red-500'}`}>
+                                            <option value="ACTIVO">🟢 EVENTO ACTIVO</option>
+                                            <option value="PAUSADO">🔴 EVENTO PAUSADO / FULL</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {/* DERECHA: Subida de Flyer */}
+                                <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 flex flex-col">
+                                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Flyer Principal (Se mostrará a los clientes)</label>
+
+                                    <div className="flex-1 w-full relative group rounded-2xl overflow-hidden border-2 border-dashed border-slate-700 hover:border-orange-500 transition-colors bg-slate-900 flex items-center justify-center min-h-[300px]">
+                                        {flayerBase64 || flayerUrl ? (
+                                            <img src={flayerBase64 || flayerUrl} alt="Flyer Preview" className="absolute inset-0 w-full h-full object-contain p-2 group-hover:opacity-40 transition-opacity duration-300" />
+                                        ) : (
+                                            <div className="text-center p-6 opacity-50">
+                                                <span className="text-6xl block mb-4">📸</span>
+                                                <p className="text-sm text-slate-400 font-medium">Sube el póster del sorteo</p>
+                                            </div>
+                                        )}
+
+                                        <div className={`absolute inset-0 bg-slate-950/60 backdrop-blur-sm flex flex-col items-center justify-center opacity-0 ${(!flayerBase64 && !flayerUrl) ? 'opacity-100 backdrop-blur-none bg-transparent' : 'group-hover:opacity-100'} transition-all duration-300`}>
+                                            <label className="bg-white text-slate-900 px-6 py-3 rounded-xl font-bold cursor-pointer hover:bg-orange-500 hover:text-white transition-colors shadow-2xl transform hover:scale-105 active:scale-95">
+                                                {flayerUrl || flayerBase64 ? '🔄 Reemplazar Imagen' : '📁 Seleccionar Archivo'}
+                                                <input type="file" accept="image/*" onChange={handleFlayerChange} className="hidden" />
+                                            </label>
+                                            {flayerFile && <p className="mt-4 text-xs text-emerald-400 font-bold animate-pulse">¡Nueva imagen lista para guardar!</p>}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="mt-8 pt-6 border-t border-slate-800 flex justify-end">
+                                <button type="submit" disabled={savingConfig} className="bg-gradient-to-r from-orange-600 to-pink-600 hover:from-orange-500 hover:to-pink-500 text-white px-12 py-4 rounded-xl font-black text-lg shadow-xl shadow-orange-900/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-1 active:translate-y-0">
+                                    {savingConfig ? (
+                                        <span className="flex items-center gap-2">
+                                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                            SUBIENDO...
+                                        </span>
+                                    ) : '💾 GUARDAR Y PUBLICAR'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                )}
 
             </div>
 
