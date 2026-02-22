@@ -1,9 +1,39 @@
 "use client"
 
-import React from 'react'
-import { FileText, ShieldCheck, Scale, Calendar, CheckCircle2, AlertTriangle } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { FileText, ShieldCheck, Scale, Calendar, CheckCircle2, AlertTriangle, ExternalLink } from 'lucide-react'
+
+// URL del Google Apps Script
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwOuGzQMKPVgnQKqX64KyAEdmBEsJwBPZ4dAybSeGiOiK5QXym9j_CGdpW98YYV2MKI/exec";
 
 export default function TerminosYCondiciones() {
+
+  // ESTADOS DEL CMS PARA LEGALES
+  const [tycFecha, setTycFecha] = useState('10 ENE 2026')
+  const [tycPremio, setTycPremio] = useState('Una Moto Honda 0km')
+  const [tycRegion, setTycRegion] = useState('Lima')
+  const [tycPdf, setTycPdf] = useState('')
+  const [precioTicket, setPrecioTicket] = useState('S/ 5.00')
+
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const res = await fetch(`${APPS_SCRIPT_URL}?accion=getConfig`);
+        const json = await res.json();
+        if (json.success && json.data) {
+          if (json.data.tycFecha) setTycFecha(json.data.tycFecha)
+          if (json.data.tycPremio) setTycPremio(json.data.tycPremio)
+          if (json.data.tycRegion) setTycRegion(json.data.tycRegion)
+          if (json.data.tycPdf) setTycPdf(json.data.tycPdf)
+          if (json.data.precioTicket) setPrecioTicket(json.data.precioTicket)
+        }
+      } catch (error) {
+        console.error("Error cargando CMS en términos:", error);
+      }
+    };
+    fetchConfig();
+  }, []);
+
   return (
     <section className="py-20 bg-[#020617] relative overflow-hidden min-h-screen">
 
@@ -22,7 +52,7 @@ export default function TerminosYCondiciones() {
             <span className="text-orange-500">CONDICIONES</span>
           </h1>
           <div className="flex items-center justify-center gap-4 mt-6 text-slate-500 text-xs font-bold uppercase tracking-widest">
-            <span className="flex items-center gap-1"><Calendar size={14} /> 10 ENE 2026</span>
+            <span className="flex items-center gap-1"><Calendar size={14} /> {tycFecha.toUpperCase()}</span>
             <span className="w-1.5 h-1.5 rounded-full bg-slate-800"></span>
             <span className="flex items-center gap-1"><Scale size={14} /> RUC: 20611213175</span>
           </div>
@@ -34,16 +64,23 @@ export default function TerminosYCondiciones() {
 
           <div className="relative bg-white rounded-[2rem] shadow-2xl flex flex-col overflow-hidden border border-white/10">
 
-            {/* Barra superior */}
+            {/* Barra superior inteligente (Cambia si hay PDF o no) */}
             <div className="bg-slate-50 border-b border-slate-200 px-8 py-4 flex items-center justify-between">
               <div className="flex gap-1.5">
                 <div className="w-3 h-3 rounded-full bg-red-400"></div>
                 <div className="w-3 h-3 rounded-full bg-amber-400"></div>
                 <div className="w-3 h-3 rounded-full bg-emerald-400"></div>
               </div>
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                <FileText size={12} /> IMMUGANACOMIGOYA_TYC_2026.PDF
-              </span>
+
+              {tycPdf ? (
+                <a href={tycPdf} target="_blank" rel="noopener noreferrer" className="text-[10px] font-black text-orange-500 hover:text-orange-600 uppercase tracking-widest flex items-center gap-2 transition-colors bg-orange-50 px-3 py-1 rounded-lg border border-orange-200">
+                  <FileText size={12} /> DESCARGAR PDF OFICIAL <ExternalLink size={12} />
+                </a>
+              ) : (
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                  <FileText size={12} /> IMMUGANACOMIGOYA_TYC.PDF
+                </span>
+              )}
             </div>
 
             {/* Contenido del Documento */}
@@ -61,22 +98,10 @@ export default function TerminosYCondiciones() {
                 <h3 className="font-black text-slate-900 uppercase text-sm mb-4 flex items-center gap-2">
                   <span className="text-orange-500">1.</span> Identificación de la Empresa Organizadora
                 </h3>
-                <p>
-                  La presente promoción es organizada por <strong>IMMUGANACOMIGOYA</strong>,
-                  marca comercial de <strong>IMPORT'S & Multiservices MC e.i r.l.</strong>,
-                  identificada con <strong>RUC 20611213175</strong>, en adelante “el Organizador”.
-                </p>
-                <p className="mt-2 text-slate-500">
-                  La finalidad de la promoción es la difusión, posicionamiento y promoción de
-                  los sorteos, productos y servicios importados ofrecidos por el Organizador
-                  a través de redes sociales y medios digitales.
-                </p>
-                <p className="mt-2 text-slate-500 italic">
-                  El acceso, registro y participación en cualquier dinámica, sorteo o evento
-                  implica la aceptación expresa de los presentes Términos y Condiciones.
-                </p>
+                <p>La presente promoción es organizada por <strong>IMMUGANACOMIGOYA</strong>, marca comercial de <strong>IMPORT'S & Multiservices MC e.i r.l.</strong>, identificada con <strong>RUC 20611213175</strong>, en adelante “el Organizador”.</p>
+                <p className="mt-2 text-slate-500">La finalidad de la promoción es la difusión, posicionamiento y promoción de los sorteos, productos y servicios importados ofrecidos por el Organizador a través de redes sociales y medios digitales.</p>
+                <p className="mt-2 text-slate-500 italic">El acceso, registro y participación en cualquier dinámica, sorteo o evento implica la aceptación expresa de los presentes Términos y Condiciones.</p>
               </section>
-
 
               {/* Sección 2 */}
               <section>
@@ -99,7 +124,7 @@ export default function TerminosYCondiciones() {
                 </div>
               </section>
 
-              {/* Sección 4 */}
+              {/* Sección 4 (CONECTADO AL PRECIO) */}
               <section>
                 <h3 className="font-black text-slate-900 uppercase text-sm mb-4 flex items-center gap-2">
                   <span className="text-orange-500">4.</span> Mecánica de Participación
@@ -107,7 +132,7 @@ export default function TerminosYCondiciones() {
                 <ul className="list-disc pl-5 space-y-2 text-slate-600">
                   <li>La participación se realizará mediante la adquisición de tickets a través de la plataforma web oficial o vía WhatsApp autorizado.</li>
                   <li>Los pagos deberán efectuarse únicamente por los medios habilitados: <strong>Yape, Plin o transferencias bancarias autorizadas.</strong></li>
-                  <li>El costo de participación podrá variar según la dinámica, iniciando desde <strong>S/ 5.00 (Cinco y 00/100 soles).</strong></li>
+                  <li>El costo de participación podrá variar según la dinámica, iniciando desde <strong>{precioTicket}.</strong></li>
                   <li>Cada participante podrá participar un número ilimitado de veces.</li>
                 </ul>
               </section>
@@ -136,16 +161,16 @@ export default function TerminosYCondiciones() {
                 <p className="mt-3 text-xs text-red-500 font-bold uppercase">Cualquier comunicación fuera de estos canales no será considerada válida.</p>
               </section>
 
-              {/* Sección 7 */}
-              <section className="bg-slate-900 text-white p-6 rounded-2xl">
+              {/* Sección 7 (CONECTADO A LA FECHA CMS) */}
+              <section className="bg-slate-900 text-white p-6 rounded-2xl border-l-4 border-orange-500">
                 <h3 className="font-black uppercase text-sm mb-2 text-orange-500">07. Vigencia de la Promoción</h3>
-                <p className="text-sm">El registro está habilitado en la plataforma.</p>
+                <p className="text-sm">El registro y participación se encuentra habilitado en nuestra plataforma.</p>
                 <p className="mt-3 font-black text-lg italic uppercase tracking-tighter">
-                  Primer evento: Domingo 25 de Enero de 2026
+                  SORTEO PROGRAMADO PARA: {tycFecha}
                 </p>
               </section>
 
-              {/* Sección 8 */}
+              {/* Sección 8 (CONECTADO A PREMIO Y REGIÓN CMS) */}
               <section>
                 <h3 className="font-black text-slate-900 uppercase text-sm mb-4 flex items-center gap-2">
                   <span className="text-orange-500">8.</span> Premios y Condiciones de Entrega
@@ -154,18 +179,19 @@ export default function TerminosYCondiciones() {
                 <p>• Los premios son personales e intransferibles.</p>
 
                 <div className="mt-6 space-y-4">
-                  <p className="font-bold underline uppercase text-xs">Entrega de premios mayores:</p>
+                  <p className="font-bold underline uppercase text-xs">Premio Principal a Entregar:</p>
+                  <p className="text-sm">Consiste en: <strong className="text-emerald-600 bg-emerald-50 px-2 py-1 rounded">{tycPremio}</strong>.</p>
                   <p className="text-sm">En caso de motos, vehículos o inmuebles, la entrega se formalizará mediante escritura pública ante notario. Los gastos notariales en sorteos de inmuebles serán asumidos por el Organizador.</p>
 
-                  <p className="font-bold underline uppercase text-xs">Plazos de entrega:</p>
+                  <p className="font-bold underline uppercase text-xs mt-4">Plazos y lugares de entrega:</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="border border-slate-200 p-3 rounded-lg bg-slate-50">
-                      <p className="font-black text-orange-600 uppercase text-[10px]">Puerto Maldonado</p>
-                      <p className="text-sm">3 a 10 días hábiles.</p>
+                      <p className="font-black text-orange-600 uppercase text-[10px]">Lugar Base de Operaciones</p>
+                      <p className="text-sm">3 a 10 días hábiles en Puerto Maldonado.</p>
                     </div>
                     <div className="border border-slate-200 p-3 rounded-lg bg-slate-50">
-                      <p className="font-black text-orange-600 uppercase text-[10px]">Provincias</p>
-                      <p className="text-sm">7 a 15 días hábiles.</p>
+                      <p className="font-black text-orange-600 uppercase text-[10px]">Resto del País</p>
+                      <p className="text-sm">7 a 15 días hábiles (Incluye <strong>{tycRegion}</strong>).</p>
                     </div>
                   </div>
                 </div>
@@ -179,38 +205,18 @@ export default function TerminosYCondiciones() {
                 <p className="text-red-950 font-medium">Queda prohibida la participación de trabajadores o familiares directos del Organizador.</p>
                 <p className="mt-2 text-red-800 text-xs italic">Fraude, suplantación o comprobantes duplicados darán lugar a descalificación inmediata sin derecho a reclamo.</p>
               </section>
+
               {/* Sección 10 */}
-<section>
-  <h3 className="font-black text-slate-900 uppercase text-sm mb-4 flex items-center gap-2">
-    <span className="text-orange-500">10.</span> Modalidad del Sorteo y Validez de Resultados
-  </h3>
+              <section>
+                <h3 className="font-black text-slate-900 uppercase text-sm mb-4 flex items-center gap-2">
+                  <span className="text-orange-500">10.</span> Modalidad del Sorteo y Validez
+                </h3>
+                <p>El sorteo se realizará de manera presencial y virtual, pudiendo ser transmitido en vivo a través de las plataformas oficiales del Organizador.</p>
+                <p className="mt-2">Los resultados del sorteo serán <strong>válidos, definitivos e inapelables</strong>, independientemente de que el participante o ganador se encuentre presente o no al momento de su realización.</p>
+              </section>
 
-  <p>
-    El sorteo se realizará de manera <strong>presencial y virtual</strong>, pudiendo ser
-    transmitido en vivo a través de las plataformas oficiales del Organizador.
-  </p>
-
-  <p className="mt-2">
-    Los resultados del sorteo serán <strong>válidos, definitivos e inapelables</strong>,
-    independientemente de que el participante o ganador se encuentre presente o no
-    al momento de su realización.
-  </p>
-
-  <p className="mt-2">
-    La <strong>ausencia física o virtual, desconexión o inasistencia</strong> del participante
-    no invalida ni afecta el derecho a recibir el premio, siempre que cumpla con los
-    requisitos establecidos en los presentes Términos y Condiciones.
-  </p>
-
-  <p className="mt-2 text-slate-500 italic">
-    El Organizador garantiza el respeto y reconocimiento de los ganadores conforme
-    a los resultados obtenidos durante el sorteo.
-  </p>
-</section>
-
-
-              <p className="text-center font-bold text-xs pt-10 text-slate-400 uppercase tracking-widest">
-                Última actualización: 10 de enero de 2026.
+              <p className="text-center font-bold text-xs pt-10 text-slate-400 uppercase tracking-widest border-t border-slate-100">
+                Documento adaptado automáticamente para el evento actual.
               </p>
 
             </div>

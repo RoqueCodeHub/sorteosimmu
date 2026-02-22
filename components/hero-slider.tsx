@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight, Zap, Loader2 } from "lucide-react"
 
 // 🚨 RECUERDA: Verifica que esta URL sea la de tu Apps Script actual
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwXFAccoOYfIDu4GBVyVcXpHfnkBxAhnX-05u9Xqx4MU9zD1i3qPjUlpqNALmHCwNUI/exec'
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwOuGzQMKPVgnQKqX64KyAEdmBEsJwBPZ4dAybSeGiOiK5QXym9j_CGdpW98YYV2MKI/exec'
 
 // Tus slides antiguos se mantienen como respaldo/secundarios
 const slidesEstaticos = [

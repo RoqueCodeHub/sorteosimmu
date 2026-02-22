@@ -5,7 +5,7 @@ import { Zap, Flame, Target } from "lucide-react"
 import Link from "next/link"
 
 const EVENT_DATE_ISO = "2026-03-08T17:00:00-06:00"
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwXFAccoOYfIDu4GBVyVcXpHfnkBxAhnX-05u9Xqx4MU9zD1i3qPjUlpqNALmHCwNUI/exec'
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwOuGzQMKPVgnQKqX64KyAEdmBEsJwBPZ4dAybSeGiOiK5QXym9j_CGdpW98YYV2MKI/exec'
 
 interface TimeLeft { days: number; hours: number; minutes: number; seconds: number }
 
