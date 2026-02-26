@@ -30,6 +30,13 @@ interface Participante {
     codigos: string
 }
 
+// Estructura de Paquetes de Tickets
+interface PaqueteTicket {
+    cantidad: number;
+    precio: number;
+    etiqueta: string;
+}
+
 export default function AdminPanel() {
 
     // ==========================================
@@ -77,7 +84,10 @@ export default function AdminPanel() {
     const [cmsTab, setCmsTab] = useState<'evento' | 'pagos' | 'legales'>('evento')
 
     const [eventoActivo, setEventoActivo] = useState('')
-    const [precioTicket, setPrecioTicket] = useState('')
+
+    // NUEVO: Estado de Paquetes Dinámicos (Reemplaza a precioTicket)
+    const [paquetes, setPaquetes] = useState<PaqueteTicket[]>([{ cantidad: 1, precio: 5, etiqueta: 'Normal' }])
+
     const [metaTickets, setMetaTickets] = useState('5000')
     const [promoActiva, setPromoActiva] = useState('')
     const [estadoEvento, setEstadoEvento] = useState('ACTIVO')
@@ -100,21 +110,65 @@ export default function AdminPanel() {
     const [tycPdf, setTycPdf] = useState('')
 
     // ==========================================
-    // 3. EFECTOS Y CARGA INICIAL
+    // 3. EFECTOS, CARGA INICIAL Y AUTO-LOGOUT
     // ==========================================
     useEffect(() => {
         const isAuth = localStorage.getItem('adminAuth')
-        if (isAuth === 'true') {
+        const loginTime = localStorage.getItem('adminAuthTime')
+        const now = new Date().getTime()
+
+        // Verifica si hay sesión y si no han pasado más de 30 mins (1800000 ms)
+        if (isAuth === 'true' && loginTime && (now - parseInt(loginTime) < 1800000)) {
             setAuthorized(true)
             fetchData()
             cargarConfiguracion()
+        } else {
+            handleLogout()
         }
     }, [])
+
+    // Detector de inactividad de 30 minutos
+    useEffect(() => {
+        let timeoutId: NodeJS.Timeout;
+
+        const resetTimer = () => {
+            clearTimeout(timeoutId);
+            if (authorized) {
+                localStorage.setItem('adminAuthTime', new Date().getTime().toString());
+                timeoutId = setTimeout(() => {
+                    handleLogout();
+                    alert("⏳ Tu sesión ha expirado por inactividad (30 minutos). Por favor, ingresa de nuevo.");
+                }, 1800000); // 30 minutos
+            }
+        };
+
+        if (authorized) {
+            resetTimer();
+            window.addEventListener('mousemove', resetTimer);
+            window.addEventListener('keypress', resetTimer);
+            window.addEventListener('click', resetTimer);
+            window.addEventListener('scroll', resetTimer);
+        }
+
+        return () => {
+            clearTimeout(timeoutId);
+            window.removeEventListener('mousemove', resetTimer);
+            window.removeEventListener('keypress', resetTimer);
+            window.removeEventListener('click', resetTimer);
+            window.removeEventListener('scroll', resetTimer);
+        };
+    }, [authorized]);
+
+
+    // ==========================================
+    // 4. FUNCIONES PRINCIPALES
+    // ==========================================
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault()
         if (password === ADMIN_PASSWORD) {
             localStorage.setItem('adminAuth', 'true')
+            localStorage.setItem('adminAuthTime', new Date().getTime().toString())
             setAuthorized(true)
             setAuthError(false)
             fetchData()
@@ -126,7 +180,9 @@ export default function AdminPanel() {
 
     const handleLogout = () => {
         localStorage.removeItem('adminAuth')
+        localStorage.removeItem('adminAuthTime')
         setAuthorized(false)
+        setPassword('')
         setData([])
     }
 
@@ -162,7 +218,6 @@ export default function AdminPanel() {
         return `https://wa.me/51${telefono}`;
     }
 
-    // Función para obtener la imagen directa desde Google Drive
     const obtenerUrlDirecta = (url: string | undefined) => {
         if (!url) return "";
         const match = url.match(/\/d\/(.+?)\//);
@@ -179,11 +234,24 @@ export default function AdminPanel() {
             if (json.success && json.data) {
                 const conf = json.data
                 if (conf.eventoActivo) setEventoActivo(conf.eventoActivo)
-                if (conf.precioTicket) setPrecioTicket(conf.precioTicket)
                 if (conf.metaTickets) setMetaTickets(conf.metaTickets)
                 if (conf.promoActiva) setPromoActiva(conf.promoActiva)
                 if (conf.estadoEvento) setEstadoEvento(conf.estadoEvento)
                 if (conf.flayerUrl) setFlayerUrl(conf.flayerUrl)
+
+                // NUEVO: PARSEAR PAQUETES DE TICKETS
+                if (conf.precioTicket) {
+                    try {
+                        const paquetesParsed = JSON.parse(conf.precioTicket);
+                        if (Array.isArray(paquetesParsed) && paquetesParsed.length > 0) {
+                            setPaquetes(paquetesParsed);
+                        }
+                    } catch (e) {
+                        // Si era un string antiguo (Ej: "S/ 5.00"), lo transforma al nuevo modelo
+                        setPaquetes([{ cantidad: 1, precio: parseFloat(conf.precioTicket) || 5, etiqueta: 'Normal' }]);
+                    }
+                }
+
                 if (conf.yapeTitular) setYapeTitular(conf.yapeTitular)
                 if (conf.yapeNumero) setYapeNumero(conf.yapeNumero)
                 if (conf.yapeQrUrl) setYapeQrUrl(conf.yapeQrUrl)
@@ -211,6 +279,10 @@ export default function AdminPanel() {
 
     const guardarConfiguracion = async (e: React.FormEvent) => {
         e.preventDefault()
+        if (paquetes.length === 0) {
+            alert("Debes crear al menos 1 paquete de tickets.");
+            return;
+        }
         setLoadingCMS(true)
         try {
             let base64Flayer = "", flayerName = ""
@@ -222,7 +294,9 @@ export default function AdminPanel() {
 
             const payload = {
                 accion: "guardarConfig",
-                eventoActivo, precioTicket, metaTickets, promoActiva, estadoEvento, flayerUrl,
+                eventoActivo,
+                precioTicket: JSON.stringify(paquetes), // Guardamos los paquetes como JSON en la celda original
+                metaTickets, promoActiva, estadoEvento, flayerUrl,
                 flayerBase64: base64Flayer, flayerFileName: flayerName,
                 yapeTitular, yapeNumero, yapeQrUrl, yapeQrBase64: base64Yape, yapeQrFileName: yapeName,
                 plinTitular, plinNumero, plinQrUrl, plinQrBase64: base64Plin, plinQrFileName: plinName,
@@ -241,6 +315,19 @@ export default function AdminPanel() {
             setLoadingCMS(false)
         }
     }
+
+    // Funciones para manejar los paquetes dinámicos
+    const agregarPaquete = () => setPaquetes([...paquetes, { cantidad: 1, precio: 5, etiqueta: '' }]);
+    const eliminarPaquete = (index: number) => setPaquetes(paquetes.filter((_, i) => i !== index));
+    const actualizarPaquete = (index: number, campo: keyof PaqueteTicket, valor: any) => {
+        const nuevosPaquetes = [...paquetes];
+        nuevosPaquetes[index] = { ...nuevosPaquetes[index], [campo]: valor };
+        setPaquetes(nuevosPaquetes);
+    };
+
+    // ==========================================
+    // 5. ACCIONES Y EXPORTACIONES
+    // ==========================================
 
     const actualizarEstado = async (idRegistro: string, nuevoEstado: string) => {
         setUpdatingStatus(true)
@@ -679,7 +766,7 @@ export default function AdminPanel() {
             )}
 
             {/* ============================================================== */}
-            {/* MODAL DEL CMS (GESTOR DE EVENTOS V3.0) */}
+            {/* MODAL DEL CMS (CON GESTOR DINÁMICO DE PAQUETES) */}
             {/* ============================================================== */}
             {showCMS && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -706,17 +793,57 @@ export default function AdminPanel() {
                                 </div>
 
                                 <div className="min-h-[400px]">
-                                    {/* PESTAÑA: EVENTO (IMAGEN CENTRAL GRANDE) */}
                                     {cmsTab === 'evento' && (
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fadeIn">
                                             <div className="col-span-1 md:col-span-2">
                                                 <label className="block text-slate-400 text-xs font-bold mb-2">Nombre del Evento Actual</label>
                                                 <input required type="text" value={eventoActivo} onChange={(e) => setEventoActivo(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-orange-500 outline-none" />
                                             </div>
-                                            <div>
-                                                <label className="block text-slate-400 text-xs font-bold mb-2">Precio del Ticket (Texto Libre)</label>
-                                                <input required type="text" value={precioTicket} onChange={(e) => setPrecioTicket(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-orange-500 outline-none" />
+
+                                            {/* --- INICIO: GESTOR DE PAQUETES --- */}
+                                            <div className="col-span-1 md:col-span-2 bg-slate-950/50 p-6 rounded-2xl border border-slate-800">
+                                                <div className="flex justify-between items-center mb-4">
+                                                    <div>
+                                                        <h3 className="text-white font-black uppercase text-sm tracking-wider">Paquetes de Venta</h3>
+                                                        <p className="text-xs text-slate-500">Crea las opciones de tickets que verán los clientes.</p>
+                                                    </div>
+                                                    <button type="button" onClick={agregarPaquete} className="flex items-center gap-2 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-500 hover:text-white border border-emerald-600/50 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all">
+                                                        ➕ Añadir
+                                                    </button>
+                                                </div>
+
+                                                <div className="space-y-3">
+                                                    {paquetes.map((paquete, index) => (
+                                                        <div key={index} className="flex flex-wrap md:flex-nowrap gap-3 items-end bg-slate-900 p-4 rounded-xl border border-slate-700 relative">
+
+                                                            <div className="flex-1 min-w-[100px]">
+                                                                <label className="block text-[10px] text-slate-400 font-bold uppercase mb-1">Cant. Tickets</label>
+                                                                <input type="number" min="1" required value={paquete.cantidad} onChange={(e) => actualizarPaquete(index, 'cantidad', parseInt(e.target.value) || 1)} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-white focus:border-orange-500 outline-none font-bold" />
+                                                            </div>
+
+                                                            <div className="flex-1 min-w-[100px]">
+                                                                <label className="block text-[10px] text-slate-400 font-bold uppercase mb-1">Precio Total (S/)</label>
+                                                                <input type="number" min="1" step="0.1" required value={paquete.precio} onChange={(e) => actualizarPaquete(index, 'precio', parseFloat(e.target.value) || 0)} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-emerald-400 focus:border-emerald-500 outline-none font-bold" />
+                                                            </div>
+
+                                                            <div className="flex-[2] min-w-[150px]">
+                                                                <label className="block text-[10px] text-slate-400 font-bold uppercase mb-1">Etiqueta (Opcional)</label>
+                                                                <input type="text" value={paquete.etiqueta} onChange={(e) => actualizarPaquete(index, 'etiqueta', e.target.value)} placeholder="Ej: Mejor Oferta" className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-white focus:border-orange-500 outline-none" />
+                                                            </div>
+
+                                                            {paquetes.length > 1 && (
+                                                                <div className="flex-shrink-0">
+                                                                    <button type="button" onClick={() => eliminarPaquete(index)} className="bg-red-900/30 text-red-500 p-2.5 rounded-lg hover:bg-red-600 hover:text-white border border-red-900/50 transition-colors" title="Eliminar paquete">
+                                                                        🗑️
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
+                                            {/* --- FIN: GESTOR DE PAQUETES --- */}
+
                                             <div>
                                                 <label className="block text-slate-400 text-xs font-bold mb-2">Estado del Evento</label>
                                                 <select value={estadoEvento} onChange={(e) => setEstadoEvento(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-orange-500 outline-none">
@@ -728,11 +855,12 @@ export default function AdminPanel() {
                                                 <label className="block text-slate-400 text-xs font-bold mb-2">Meta de Tickets (Barra de progreso)</label>
                                                 <input type="text" value={metaTickets} onChange={(e) => setMetaTickets(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-orange-500 outline-none" />
                                             </div>
-                                            <div>
+                                            <div className="col-span-1 md:col-span-2">
                                                 <label className="block text-slate-400 text-xs font-bold mb-2">Texto de Promoción (Opcional)</label>
                                                 <input type="text" value={promoActiva} onChange={(e) => setPromoActiva(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-orange-500 outline-none" />
                                             </div>
 
+                                            {/* AQUI MANTUVIMOS TU DISEÑO ORIGINAL DE IMAGEN COMO PEDISTE */}
                                             <div className="col-span-1 md:col-span-2 mt-6 flex flex-col items-center bg-slate-950 p-6 rounded-2xl border border-slate-800">
                                                 <h3 className="text-white font-black uppercase text-sm tracking-wider mb-4">Flyer / Imagen Principal</h3>
 
@@ -762,7 +890,7 @@ export default function AdminPanel() {
                                         </div>
                                     )}
 
-                                    {/* PESTAÑA: PAGOS (IMÁGENES CENTRALES GRANDES) */}
+                                    {/* MANTUVIMOS TU DISEÑO DE YAPE/PLIN INTACTO */}
                                     {cmsTab === 'pagos' && (
                                         <div className="space-y-8 animate-fadeIn">
 
@@ -1005,10 +1133,15 @@ export default function AdminPanel() {
                                             <p className="text-emerald-400 font-bold uppercase tracking-widest text-sm mb-2">🏆 ¡TENEMOS GANADOR!</p>
                                             <h3 className="text-3xl font-black text-white capitalize mb-2">{ganadorActual?.nombres?.toLowerCase()} {ganadorActual?.apellidos?.toLowerCase()}</h3>
                                             <p className="text-xl text-slate-400 font-mono">DNI: {ganadorActual?.documento}</p>
+
+                                            {/* AQUÍ MOSTRAMOS EL TICKET EXACTO GANADOR */}
                                             <div className="mt-4 bg-emerald-500/10 border border-emerald-500/30 p-3 rounded-lg">
-                                                <p className="text-emerald-400 font-bold text-2xl tracking-widest">Ticket: {ticketSorteado}</p>
+                                                <p className="text-emerald-400 font-bold text-2xl tracking-widest">
+                                                    Ticket: {ticketSorteado}
+                                                </p>
                                             </div>
                                         </div>
+
                                         <div className="flex gap-4 justify-center mt-8">
                                             <button onClick={reiniciarSorteo} className="bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 px-6 py-3 rounded-xl font-bold">🔄 Nuevo Sorteo</button>
                                             <button onClick={() => setShowSorteo(false)} className="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-emerald-900/20">Cerrar y Validar</button>

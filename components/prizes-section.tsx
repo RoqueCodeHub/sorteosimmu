@@ -44,6 +44,27 @@ export default function EventosRecientesSection() {
     return url;
   };
 
+  // Función para extraer el precio base (el primer paquete) del JSON
+  const getPrecioBase = (precioTicketStr: string) => {
+    if (!precioTicketStr) return "S/. 0.00 SOLES";
+    try {
+      const paquetes = JSON.parse(precioTicketStr);
+      if (Array.isArray(paquetes) && paquetes.length > 0) {
+        // Extrae el precio del primer paquete (ej: 5.00)
+        return `S/. ${paquetes[0].precio.toFixed(2)} SOLES`;
+      }
+    } catch (e) {
+      // Fallback por si acaso es un texto antiguo
+      return `S/. ${precioTicketStr} SOLES`;
+    }
+    return "S/. 0.00 SOLES";
+  };
+
+  // Función para extraer solo el número del precio para la etiqueta flotante (ej: S/ 5.00)
+  const getPrecioCorto = (precioTicketStr: string) => {
+    return getPrecioBase(precioTicketStr).replace(' SOLES', '').replace('S/.', 'S/');
+  }
+
   useEffect(() => {
     const fetchConfig = async () => {
       try {
@@ -112,6 +133,32 @@ export default function EventosRecientesSection() {
                       <Trophy size={48} className="opacity-30 text-slate-500" />
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/20 to-transparent opacity-90"></div>
+
+                    {/* ========================================= */}
+                    {/* ETIQUETAS FLOTANTES SOBRE LA IMAGEN       */}
+                    {/* ========================================= */}
+                    <div className="absolute top-4 right-4 flex flex-col gap-2 items-end z-20">
+
+                      {/* 1. PRECIO BASE (Primera Cantidad) - SIEMPRE VISIBLE */}
+                      {evento.precioTicket && (
+                        <div className="bg-gradient-to-r from-orange-600 to-orange-500 text-white text-xs md:text-sm font-black uppercase px-4 py-2 rounded-xl shadow-[0_0_15px_rgba(234,88,12,0.5)] border border-orange-400">
+                          1 TICKET = {getPrecioCorto(evento.precioTicket)}
+                        </div>
+                      )}
+
+                      {/* 2. PROMOCIONES ADICIONALES */}
+                      {evento.promoActiva && evento.promoActiva.trim() !== "-" && evento.promoActiva.trim() !== "" && (
+                        evento.promoActiva.split(',').map((promo, idx) => (
+                          <div
+                            key={idx}
+                            className="bg-gradient-to-r from-pink-600 to-rose-500 text-white text-[10px] md:text-xs font-bold uppercase px-3 py-1.5 rounded-lg shadow-lg border border-pink-400"
+                          >
+                            {promo.trim()}
+                          </div>
+                        ))
+                      )}
+                    </div>
+
                   </div>
 
                   {/* Detalles del evento (Nombre, Promo, Precio) */}
@@ -120,7 +167,7 @@ export default function EventosRecientesSection() {
                       {evento.eventoActivo}
                     </h3>
 
-                    {/* Texto de Promoción */}
+                    {/* Texto de Promoción Abajo (Opcional) */}
                     {evento.promoActiva && (
                       <div className="flex items-center gap-2 text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl w-fit">
                         <Tag size={14} className="fill-emerald-500/20" />
@@ -128,10 +175,10 @@ export default function EventosRecientesSection() {
                       </div>
                     )}
 
-                    {/* Precio Formateado */}
-                    <div className="mt-2 flex items-center gap-2 text-orange-400 font-black text-lg bg-orange-500/10 border border-orange-500/20 px-4 py-2 rounded-xl">
+                    {/* Precio Formateado Abajo */}
+                    <div className="mt-2 flex items-center gap-2 text-orange-400 font-black text-sm md:text-base bg-orange-500/10 border border-orange-500/20 px-4 py-2 rounded-xl">
                       <Ticket size={20} />
-                      PRECIO: S/. {evento.precioTicket} SOLES
+                      PRECIO: {getPrecioBase(evento.precioTicket)}
                     </div>
                   </div>
                 </div>

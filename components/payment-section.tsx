@@ -7,6 +7,13 @@ import { UBIGEO_PERU } from './peru-data';
 
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwOuGzQMKPVgnQKqX64KyAEdmBEsJwBPZ4dAybSeGiOiK5QXym9j_CGdpW98YYV2MKI/exec";
 
+// Estructura que usaremos para los paquetes de tickets
+interface PaqueteTicket {
+    cantidad: number;
+    precio: number;
+    etiqueta: string;
+}
+
 interface FormData {
     firstName: string;
     lastName: string;
@@ -31,9 +38,12 @@ export default function PaymentSection() {
     // ==========================================
     // 🧠 ESTADOS DEL CMS (GESTOR DE EVENTOS)
     // ==========================================
-    const [precioTicket, setPrecioTicket] = useState(5.00);
     const [nombreEvento, setNombreEvento] = useState("Cargando Evento...");
     const [promoActiva, setPromoActiva] = useState("");
+
+    // Aquí almacenaremos los paquetes leídos de la Base de Datos
+    const [paquetes, setPaquetes] = useState<PaqueteTicket[]>([{ cantidad: 1, precio: 5, etiqueta: '' }]);
+    const [paqueteSeleccionado, setPaqueteSeleccionado] = useState<PaqueteTicket | null>(null);
 
     // ESTADOS PARA PAGOS (Yape/Plin)
     const [yapeTitular, setYapeTitular] = useState("");
@@ -65,11 +75,26 @@ export default function PaymentSection() {
                 const res = await fetch(`${APPS_SCRIPT_URL}?accion=getConfig`);
                 const json = await res.json();
                 if (json.success && json.data) {
-                    setPrecioTicket(parseFloat(json.data.precioTicket) || 5.00);
                     const eventoActivoCMS = json.data.eventoActivo || "GRAN SORTEO";
                     setNombreEvento(eventoActivoCMS);
                     setPromoActiva(json.data.promoActiva || "");
                     setFormData(prev => ({ ...prev, evento: eventoActivoCMS }));
+
+                    // LECTURA DINÁMICA DE PAQUETES
+                    if (json.data.precioTicket) {
+                        try {
+                            const p = JSON.parse(json.data.precioTicket);
+                            if (Array.isArray(p) && p.length > 0) {
+                                setPaquetes(p);
+                                setPaqueteSeleccionado(p[0]); // Seleccionamos el primer paquete por defecto
+                            }
+                        } catch (e) {
+                            // Si falla, es que tiene el formato viejo de texto. Se le pone uno genérico.
+                            const defaultPaquete = { cantidad: 1, precio: parseFloat(json.data.precioTicket) || 5, etiqueta: '' };
+                            setPaquetes([defaultPaquete]);
+                            setPaqueteSeleccionado(defaultPaquete);
+                        }
+                    }
 
                     // Cargar datos de pago desde el CMS
                     if (json.data.yapeTitular) setYapeTitular(json.data.yapeTitular);
@@ -87,10 +112,6 @@ export default function PaymentSection() {
         fetchConfig();
     }, []);
 
-    const PRECIOS_PACKS: Record<number, number> = { 1: 5.00, 3: 10.00, 7: 21.00, 11: 30.00, 20: 50.00 };
-    const cantidadSeleccionada = Number(formData.cantidadTickets) || 1;
-    const montoTotal = (PRECIOS_PACKS[cantidadSeleccionada] || (cantidadSeleccionada * precioTicket)).toFixed(2);
-
     const departamentos = Object.keys(UBIGEO_PERU);
     const provincias = formData.department ? Object.keys(UBIGEO_PERU[formData.department as keyof typeof UBIGEO_PERU] || {}) : [];
     const distritos = (formData.department && formData.province) ? UBIGEO_PERU[formData.department as keyof typeof UBIGEO_PERU][formData.province] || [] : [];
@@ -105,8 +126,6 @@ export default function PaymentSection() {
                 setFormData((prev) => ({ ...prev, department: value, province: "", district: "" }));
             } else if (name === "province") {
                 setFormData((prev) => ({ ...prev, province: value, district: "" }));
-            } else if (name === "cantidadTickets") {
-                setFormData((prev) => ({ ...prev, cantidadTickets: parseInt(value) || 1 }));
             } else {
                 setFormData((prev) => ({ ...prev, [name]: value }));
             }
@@ -116,6 +135,8 @@ export default function PaymentSection() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.paymentProof) { alert("⚠️ Por favor, sube la captura de tu pago para continuar."); return; }
+        if (!paqueteSeleccionado) { alert("⚠️ Debes seleccionar un paquete de tickets."); return; }
+
         setLoading(true);
 
         try {
@@ -129,10 +150,11 @@ export default function PaymentSection() {
                 });
             }
 
+            // Usamos las cantidades y precios del paquete dinámico que seleccionó el usuario
             const payload = {
                 evento: formData.evento, nombres: formData.firstName, apellidos: formData.lastName,
                 tipoDocumento: formData.documentType, numeroDocumento: formData.documentNumber, email: formData.email,
-                celular: formData.phone, cantidadTickets: formData.cantidadTickets, montoTotal: montoTotal,
+                celular: formData.phone, cantidadTickets: paqueteSeleccionado.cantidad, montoTotal: paqueteSeleccionado.precio,
                 departamento: formData.department, provincia: formData.province, distrito: formData.district,
                 comprobanteFileName: formData.paymentProof.name, comprobanteBase64: base64String
             };
@@ -192,7 +214,7 @@ export default function PaymentSection() {
                                     {yapeQrUrl ? (
                                         <img src={obtenerUrlDirecta(yapeQrUrl)} alt="QR Yape" className="w-full h-full object-contain" />
                                     ) : (
-                                        <span className="text-slate-400 text-sm font-bold text-center">QR NO CONFIGURADO<br />(Ve a tu Admin)</span>
+                                        <span className="text-slate-400 text-sm font-bold text-center"> CARGANDO QR PLIN<br />(Espere)</span>
                                     )}
                                 </div>
                                 <div className="text-center space-y-2">
@@ -218,7 +240,7 @@ export default function PaymentSection() {
                                     {plinQrUrl ? (
                                         <img src={obtenerUrlDirecta(plinQrUrl)} alt="QR Plin" className="w-full h-full object-contain" />
                                     ) : (
-                                        <span className="text-slate-400 text-sm font-bold text-center">QR NO CONFIGURADO<br />(Ve a tu Admin)</span>
+                                        <span className="text-slate-400 text-sm font-bold text-center">CARGANDO QR YAPE...<br />(Espere)</span>
                                     )}
                                 </div>
                                 <div className="text-center space-y-2">
@@ -241,7 +263,7 @@ export default function PaymentSection() {
                     <div className="lg:col-span-7 bg-slate-900/50 border border-slate-800 rounded-[2.5rem] p-6 md:p-10 shadow-2xl">
                         <form onSubmit={handleSubmit} className="space-y-10">
 
-                            {/* EVENTO Y TICKETS */}
+                            {/* EVENTO Y TICKETS (NUEVO DISEÑO DE PAQUETES) */}
                             <div className="space-y-6">
                                 <h3 className="text-lg font-black text-orange-500 uppercase tracking-widest border-b border-slate-800 pb-2 flex items-center gap-2"><Trophy size={20} /> 1. Sorteo y Tickets</h3>
                                 <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
@@ -249,22 +271,45 @@ export default function PaymentSection() {
                                     <p className="text-white font-black text-xl italic">{nombreEvento}</p>
                                 </div>
 
-                                <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex flex-col md:flex-row items-center justify-between gap-4">
-                                    <div className="w-full md:w-2/3">
-                                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-2"> <Ticket size={14} className="text-orange-500" /> Promociones </label>
-                                        <select name="cantidadTickets" required className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white font-bold outline-none focus:border-orange-500 transition-all cursor-pointer appearance-none" value={formData.cantidadTickets} onChange={handleChange}>
-                                            <option value={1}>🎟 01 TICKET ➜ S/ 5.00</option>
-                                            <option value={3}>🎟 03 TICKETS ➜ S/ 10.00</option>
-                                            <option value={7}>🎟 07 TICKETS ➜ S/ 21.00</option>
-                                            <option value={11}>🎟 11 TICKETS ➜ S/ 30.00</option>
-                                            <option value={20}>🎟 20 TICKETS ➜ S/ 50.00</option>
-                                        </select>
-                                    </div>
-                                    <div className="w-full md:w-1/3 text-left md:text-right border-t border-slate-800 md:border-none pt-3 md:pt-0">
-                                        <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-1"> Total a Pagar </p>
-                                        <p className="text-3xl font-black text-emerald-500"> S/ {montoTotal} </p>
-                                    </div>
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                    {paquetes.map((pack, idx) => {
+                                        const isSelected = paqueteSeleccionado?.cantidad === pack.cantidad;
+                                        return (
+                                            <div
+                                                key={idx}
+                                                onClick={() => setPaqueteSeleccionado(pack)}
+                                                className={`cursor-pointer rounded-2xl p-4 border-2 transition-all duration-300 text-center relative flex flex-col justify-center items-center ${isSelected
+                                                    ? 'border-orange-500 bg-orange-500/10 shadow-[0_0_20px_rgba(234,88,12,0.2)] transform scale-105 z-10'
+                                                    : 'border-slate-800 bg-slate-900 hover:border-orange-500/50 hover:bg-slate-800'
+                                                    }`}
+                                            >
+                                                {pack.etiqueta && (
+                                                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-600 to-pink-600 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg whitespace-nowrap">
+                                                        {pack.etiqueta}
+                                                    </div>
+                                                )}
+
+                                                <div className="flex items-center justify-center gap-1 mb-1 mt-2">
+                                                    <Ticket size={18} className={isSelected ? 'text-orange-500' : 'text-slate-500'} />
+                                                    <span className={`text-3xl font-black ${isSelected ? 'text-white' : 'text-slate-300'}`}>{pack.cantidad}</span>
+                                                </div>
+                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-3">TICKETS</p>
+
+                                                <div className={`w-full pt-3 border-t ${isSelected ? 'border-orange-500/30' : 'border-slate-800'}`}>
+                                                    <p className={`text-xl font-black tracking-tight ${isSelected ? 'text-emerald-400' : 'text-slate-300'}`}>
+                                                        S/ {pack.precio.toFixed(2)}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )
+                                    })}
                                 </div>
+
+                                <div className="mt-6 flex justify-between items-center bg-emerald-950/30 border border-emerald-500/30 p-4 rounded-xl">
+                                    <span className="text-emerald-500 font-bold uppercase text-sm tracking-widest">Total a pagar:</span>
+                                    <span className="text-3xl font-black text-emerald-400">S/ {paqueteSeleccionado?.precio.toFixed(2) || "0.00"}</span>
+                                </div>
+
                                 {promoActiva && (
                                     <div className="mt-4 bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-lg text-center animate-pulse">
                                         <p className="text-emerald-400 font-bold text-sm tracking-wide">🔥 {promoActiva}</p>
@@ -325,7 +370,6 @@ export default function PaymentSection() {
                                             {provincias.map(p => <option key={p} value={p}>{p}</option>)}
                                         </select>
                                     </div>
-                                    
                                     <div className="space-y-2">
                                         <label className="text-xs font-bold text-slate-400 uppercase">Distrito</label>
                                         <select name="district" required disabled={!formData.province} className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 outline-none focus:border-orange-500 text-white disabled:opacity-50" value={formData.district} onChange={handleChange}>
